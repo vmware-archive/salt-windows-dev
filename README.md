@@ -8,7 +8,7 @@ The dependencies reside in two zip files found on http://docs.saltstack.com/down
 - salt64.zip
 
 ## Usage
-If you have network connectivity you can run this script on the machine you wish to set up with the development environment. If you need to set this up in a closed network the two zipfiles can be downloaded as well and placed somewhere on your network or machine. Just change the $strWindowsRepo variable in the script to point to the location of the two zip files. eg:
+If you have network connectivity you can run this script on the machine you wish to set up with the development environment. If you need to set this up on a closed network, the two zipfiles can be downloaded and placed somewhere on your network or machine. Just change the $strWindowsRepo variable in the script to point to the location of the two zip files. eg:
 ```
 $strWindowsRepo = "\\NetworkShare\salt\repo"
 ```
