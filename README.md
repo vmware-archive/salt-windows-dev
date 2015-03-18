@@ -16,8 +16,12 @@ If you put this script in the same directory with the zip files this value can b
 ```
 $strWindowsRepo = Convert-Path .
 ```
-## Post Script Requirements
+## Clone Salt
 After running this script, pull the branch of salt you want to work on from github. Then go into the salt directory and run the following command:
 ```
 python setup.py install
 ```
+## Build Salt
+Building salt has additional requirements not installed by this script. You'll need to install the NullSoft installer. That can be downloaded here: http://sourceforge.net/projects/nsis/files/NSIS%203%20Pre-release/3.0b1/nsis-3.0b1-setup.exe/download
+### Build Steps
+1. 
