@@ -6,9 +6,9 @@
 #
 #==============================================================================
 #
-#          FILE: Bootstrap.ps1
+#          FILE: dev_env.ps1
 #
-#   DESCRIPTION: Bootstrap salt installation for 64bit windows distributions
+#   DESCRIPTION: Development Environment Installation for Windows
 #
 #          BUGS: https://github.com/saltstack/salt-windows-bootstrap/issues
 #
@@ -23,7 +23,7 @@
 Clear-Host
 Write-Output "==========================================="
 Write-Output ""
-Write-Output " Windows Development Environment Bootstrap"
+Write-Output " Development Environment Installation"
 Write-Output ""
 Write-Output " - Installs All Salt Dependencies"
 Write-Output " - Detects 32/64 bit Architectures"
