@@ -21,7 +21,23 @@ After running this script, pull the branch of salt you want to work on from gith
 ```
 python setup.py install
 ```
-## Build Salt
+
+## Build Salt (2015.2 development branch and later)
 Building salt has additional requirements not installed by this script. You'll need to install the NullSoft installer. That can be downloaded here: http://sourceforge.net/projects/nsis/files/NSIS%203%20Pre-release/3.0b1/nsis-3.0b1-setup.exe/download
+
 ### Build Steps
-1. 
+The build folders for windows are in the Salt repository as follows:
+```
+<parent folder>\salt\pkg\windows
+```
+
+The ```buildenv``` folder contains files that will be installed along with salt. The ```installer``` folder contains the files needed to create the .exe.
+- Go into the ```installer``` folder and edit the file named: ```Salt-Minion-Setup.nsi```
+- Change the ```PRODUCT_VERSION``` variable to reflect the branch you pulled from GitHub and save the file
+- Go up one directory and run the ```BuildSalt.bat``` file. 
+
+This file does the following:
+- Copies ```C:\Python27``` to ```buildenv\bin```
+- Deletes unused files from ```buildenv\bin```
+- Runs ```makensis``` to build the installer
+- Installer is placed in the ```installer``` directory
