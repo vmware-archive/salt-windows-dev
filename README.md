@@ -36,7 +36,8 @@ The build folders for windows are in the Salt repository as follows:
 The ```buildenv``` folder contains files that will be installed along with salt. The ```installer``` folder contains the files needed to create the .exe.
 - Go into the ```installer``` folder and edit the file named: ```Salt-Minion-Setup.nsi```
 - Change the ```PRODUCT_VERSION``` variable to reflect the branch you pulled from GitHub and save the file
-- Go up one directory and run the ```BuildSalt.bat``` file. 
+- Go up one directory to ```.\salt\pkg\windows```
+- Run the ```BuildSalt.bat``` file
 
 This file does the following:
 - Copies ```C:\Python27``` to ```buildenv\bin```
