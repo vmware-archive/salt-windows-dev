@@ -327,7 +327,7 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output ""
 Remove-Item $strDownloadDir -Force -Recurse
 
-$additionalPIPSoftware = @("pyOpenSSL","boto","libnacl")
+$additionalPIPSoftware = @("pyOpenSSL","boto")
 
 Foreach ($pipSoftware in $additionalPIPSoftware) {
     Write-Output "Installing additional requirement [$pipSoftware] via pip install"
