@@ -17,18 +17,18 @@
 #
 #       LICENSE: Apache 2.0
 #  ORGANIZATION: SaltStack (saltstack.org)
-#       CREATED: 02/09/2015
+#       CREATED: 03/15/2015
 #==============================================================================
 
 Clear-Host
-Write-Output "==========================================="
+Write-Output "================================================================="
 Write-Output ""
-Write-Output " Development Environment Installation"
+Write-Output "               Development Environment Installation"
 Write-Output ""
-Write-Output " - Installs All Salt Dependencies"
-Write-Output " - Detects 32/64 bit Architectures"
+Write-Output "               - Installs All Salt Dependencies"
+Write-Output "               - Detects 32/64 bit Architectures"
 Write-Output ""
-Write-Output "==========================================="
+Write-Output "================================================================="
 Write-Output ""
 
 #==============================================================================
@@ -54,9 +54,8 @@ $p = New-Item $strSaltDir -ItemType Directory -Force
 $strPip         = "get-pip.py"
 $strJinja       = "Jinja2-2.7.3-py27-none-any.whl"
 $strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
-$strVCForPython = "VCForPython27.msi"
 $strWMI         = "WMI-1.4.9-py2-none-any.whl"
-$strSalt        = "salt-2014.7.2.tar.gz"
+$strVCForPython = "VCForPython27.msi"
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
@@ -72,13 +71,10 @@ If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
     $strMsgPack     = "64\msgpack_python-0.4.5-cp27-none-win_amd64.whl"
     $strPSUtil      = "64\psutil-2.2.1-cp27-none-win_amd64.whl"
     $strPyCrypto    = "64\pycrypto-2.6.win-amd64-py2.7.exe"
-    $strPython      = "64\python-2.7.8.amd64.msi"
+    $strPython      = "64\python-2.7.9.amd64.msi"
     $strPyWin       = "64\pywin32-219.win-amd64-py2.7.exe"
     $strPyYAML      = "64\PyYAML-3.11-cp27-none-win_amd64.whl"
     $strPyZMQ       = "64\pyzmq-14.5.0-cp27-none-win_amd64.whl"
-    $strVCRedist    = "64\vcredist_x64.exe"
-    $strVCRedistMFC = "64\vcredist_x64_mfc_update.exe"
-    $strOpenSSL     = "64\Win64OpenSSL_Light-1_0_1L.exe"
 
  } Else {
 
@@ -91,13 +87,10 @@ If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
     $strMsgPack     = "32\msgpack_python-0.4.5-cp27-none-win32.whl"
     $strPSUtil      = "32\psutil-2.2.1-cp27-none-win32.whl"
     $strPyCrypto    = "32\pycrypto-2.6.win32-py2.7.exe"
-    $strPython      = "32\python-2.7.8.msi"
+    $strPython      = "32\python-2.7.9.msi"
     $strPyWin       = "32\pywin32-219.win32-py2.7.exe"
     $strPyYAML      = "32\PyYAML-3.11-cp27-none-win32.whl"
     $strPyZMQ       = "32\pyzmq-14.5.0-cp27-none-win32.whl"
-    $strVCRedist    = "32\vcredist_x86.exe"
-    $strVCRedistMFC = "32\vcredist_x86_mfc_update.exe"
-    $strOpenSSL     = "32\Win32OpenSSL_Light-1_0_1L.exe"
 
 }
 
@@ -183,6 +176,14 @@ Function Expand-ZipFile($zipfile, $destination) {
 #==============================================================================
 # Download Dependencies File
 #==============================================================================
+Write-Output "Downloading $strVCForPython. . ."
+$file = $strVCForPython
+$url = "$strWindowsRepo\$file"
+$file = "$strDownloadDir\$file"
+If (!(Test-Path $file)) {
+    DownloadFileWithProgress $url $file
+}
+
 Write-Output "Downloading $strArchiveFile . . ."
 $file = $strArchiveFile
 $url = "$strWindowsRepo\$file"
@@ -194,7 +195,7 @@ If (!(Test-Path $file)) {
 #==============================================================================
 # Unzip Dependencies File
 #==============================================================================
-Write-Output "Unzipping $strArchiveFile . . ."
+Write-Output "Unzipping $strArchiveFile . . . to $strDownloadDir [$file]"
 Expand-ZipFile $file $strDownloadDir
 
 #==============================================================================
@@ -207,7 +208,11 @@ Write-Output "Installing Dependencies . . ."
 #------------------------------------------------------------------------------
 Write-Output " - Installing $strPython . . ."
 $file = "$strDownloadDir\$strPython"
-$p = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=ALL TARGETDIR=$strPythonDir" -Wait -NoNewWindow -PassThru
+$p = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,PrependPath TARGETDIR=$strPythonDir" -Wait -NoNewWindow -PassThru
+
+Write-Output " - Installing $strVCForPython"
+$file = "$strDownloadDir\$strVCForPython"
+$p = Start-Process msiexec -ArgumentList "/i $file /qb" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # Update Environment Variables
@@ -219,46 +224,16 @@ If (!($Path.ToLower().Contains("$strPythonDir\Scripts".ToLower()))) {
     Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
 }
 
-#------------------------------------------------------------------------------
-# VC++ Compiler for Python
-#------------------------------------------------------------------------------
-Write-Output " - Installing $strVCForPython . . ."
-$file = "$strDownloadDir\$strVCForPython"
-$p = Start-Process msiexec -ArgumentList "/i $file /qb" -Wait -NoNewWindow -PassThru
 
-#------------------------------------------------------------------------------
-# Visual C++ 2008 Redistributable
-#------------------------------------------------------------------------------
-Write-Output " - Installing $strVCRedist . . ."
-$file = "$strDownloadDir\$strVCRedist"
-$p = Start-Process $file -ArgumentList "/q" -Wait -NoNewWindow -PassThru
-
-#------------------------------------------------------------------------------
-# Visual C++ 2008 Redistrubutable MFC Update
-#------------------------------------------------------------------------------
-Write-Output " - Installing $strVCRedistMFC . . ."
-$file = "$strDownloadDir\$strVCRedistMFC"
-$p = Start-Process $file -ArgumentList "/q" -Wait -NoNewWindow -PassThru
-
-# Copy the libary to the Python directory (for compiling)
-#$file = "C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.6161_none_08e61857a83bc251\msvcp90.dll"
-#Copy-Item $file C:\Python27 -Force
-
-#------------------------------------------------------------------------------
-# OpenSSL
-#------------------------------------------------------------------------------
-Write-Output " - Installing $strOpenSSL . . ."
-$file = "$strDownloadDir\$strOpenSSL"
-$p = Start-Process $file -ArgumentList "/silent" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # pip (easy_install included in pip install file)
 #------------------------------------------------------------------------------
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPip . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPip"
 $p = Start-Process "$strPythonDir\python" -ArgumentList "$file --no-index --find-links=$strDownloadDir" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
 #==============================================================================
 # Install Executables using Easy_Install
@@ -267,113 +242,103 @@ Write-Output " --------------------------------"
 #------------------------------------------------------------------------------
 # M2Crypto
 #------------------------------------------------------------------------------
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strM2Crypto . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strM2Crypto"
 $p = Start-Process "$strScriptsDir\easy_install" -ArgumentList $file -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
 #------------------------------------------------------------------------------
 # PyCrypto
 #------------------------------------------------------------------------------
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPyCrypto . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPyCrypto"
 $p = Start-Process "$strScriptsDir\easy_install" -ArgumentList $file -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
 #------------------------------------------------------------------------------
 # PyWin32
 #------------------------------------------------------------------------------
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPyWin . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPyWin"
 $p = Start-Process "$strScriptsDir\easy_install" -ArgumentList $file -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
 #==============================================================================
 # Install additional prerequisites using PIP
 #==============================================================================
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strMarkupSafe . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strMarkupSafe"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strJinja . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strJinja"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strMsgPack . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strMsgPack"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
 
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPSUtil . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPSUtil"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPyYAML . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPyYAML"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPyZMQ . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPyZMQ"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strWMI . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strWMI"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
 
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strRequests . . ."
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strRequests"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
-
-Write-Output " - Installing $strSalt . . ."
-Write-Output " --------------------------------"
-$file = "$strDownloadDir\$strSalt"
-#$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
-Write-Output " --------------------------------"
-
-#------------------------------------------------------------------------------
-# Copy Salt Configuration Files
-#------------------------------------------------------------------------------
-Write-Output " - Copying Salt configuration files . . ."
-Write-Output " --------------------------------"
-Write-Output ""
-$strConfigFiles = "$strDownloadDir\buildenv\*"
-# Copy-Item $strConfigFiles $strSaltDir -recurse
-Write-Output " --------------------------------"
 
 #------------------------------------------------------------------------------
 # Remove the temperary download directory
 #------------------------------------------------------------------------------
+Write-Output " ----------------------------------------------------------------"
 Write-Output " - Cleaning up downloaded files"
-Write-Output " --------------------------------"
+Write-Output " ----------------------------------------------------------------"
 Write-Output ""
 Remove-Item $strDownloadDir -Force -Recurse
+
+$additionalPIPSoftware = @("pyOpenSSL","boto","libnacl")
+
+Foreach ($pipSoftware in $additionalPIPSoftware) {
+    Write-Output "Installing additional requirement [$pipSoftware] via pip install"
+    pip install $pipSoftware
+}
 
 #------------------------------------------------------------------------------
 # Script complete
 #------------------------------------------------------------------------------
-Write-Output "==========================================="
+Write-Output "================================================================="
 Write-Output "Salt Stack Dev Environment Script Complete"
-Write-Output "==========================================="
-Write-Output ""
-Write-Output "Press any key to continue ..."
-$p = $HOST.UI.RawUI.Flushinputbuffer()
-$p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Output "================================================================="
+#Fails on 2012R2 ISE Elevated Rights: $p = $HOST.UI.RawUI.Flushinputbuffer()
+#Fails on 2012R2 ISE Elevated Rights: $p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
