@@ -55,6 +55,7 @@ $strPip         = "get-pip.py"
 $strJinja       = "Jinja2-2.7.3-py27-none-any.whl"
 $strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
 $strWMI         = "WMI-1.4.9-py2-none-any.whl"
+$strCertifi     = "certifi-14.05.14.tar.gz"
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
@@ -70,7 +71,7 @@ If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
     $strMsgPack     = "64\msgpack_python-0.4.5-cp27-none-win_amd64.whl"
     $strPSUtil      = "64\psutil-2.2.1-cp27-none-win_amd64.whl"
     $strPyCrypto    = "64\pycrypto-2.6.win-amd64-py2.7.exe"
-    $strPython      = "64\python-2.7.9.amd64.msi"
+    $strPython      = "64\python-2.7.8.amd64.msi"
     $strPyWin       = "64\pywin32-219.win-amd64-py2.7.exe"
     $strPyYAML      = "64\PyYAML-3.11-cp27-none-win_amd64.whl"
     $strPyZMQ       = "64\pyzmq-14.5.0-cp27-none-win_amd64.whl"
@@ -86,7 +87,7 @@ If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
     $strMsgPack     = "32\msgpack_python-0.4.5-cp27-none-win32.whl"
     $strPSUtil      = "32\psutil-2.2.1-cp27-none-win32.whl"
     $strPyCrypto    = "32\pycrypto-2.6.win32-py2.7.exe"
-    $strPython      = "32\python-2.7.9.msi"
+    $strPython      = "32\python-2.7.8.msi"
     $strPyWin       = "32\pywin32-219.win32-py2.7.exe"
     $strPyYAML      = "32\PyYAML-3.11-cp27-none-win32.whl"
     $strPyZMQ       = "32\pyzmq-14.5.0-cp27-none-win32.whl"
@@ -301,6 +302,12 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strRequests . . ."
 Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strRequests"
+$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Installing $strCertifi . . ."
+Write-Output " ----------------------------------------------------------------"
+$file = "$strDownloadDir\$strCertifi"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
