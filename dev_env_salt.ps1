@@ -6,24 +6,24 @@
 #
 #==============================================================================
 #
-#          FILE: dev_env.ps1
+#          FILE: dev_env_salt.ps1
 #
-#   DESCRIPTION: Development Environment Installation for Windows
+#   DESCRIPTION: Installs Salt in the Development Environment for Windows
 #
-#          BUGS: https://github.com/saltstack/salt-windows-bootstrap/issues
+#          BUGS: https://github.com/saltstack/salt-windows-dev/issues
 #
 #     COPYRIGHT: (c) 2012-2015 by the SaltStack Team, see AUTHORS.rst for more
 #                details.
 #
 #       LICENSE: Apache 2.0
 #  ORGANIZATION: SaltStack (saltstack.org)
-#       CREATED: 03/15/2015
+#       CREATED: 03/23/2015
 #==============================================================================
 
 Clear-Host
 Write-Output "================================================================="
 Write-Output ""
-Write-Output "               Development Environment Installation"
+Write-Output "            Salt Development Environment Installation"
 Write-Output ""
 Write-Output "               - Installs Salt"
 Write-Output "               - Detects 32/64 bit Architecture"
