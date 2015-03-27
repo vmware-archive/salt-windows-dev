@@ -71,6 +71,7 @@ If ( Test-Path -Path $strSaltDir ) {
     Write-Output "-------------------------------------------------------------"
     Write-Output ""
     $result = $host.ui.PromptForChoice("", "", $options, 0)
+    Write-Output ""
     Switch ($result) {
 
         # Selected Yes, Remove folder contents
@@ -96,7 +97,6 @@ If ( Test-Path -Path $strSaltDir ) {
     $p = New-Item $strSaltDir -ItemType Directory -Force
 
 }
-Write-Output ""
 
 #------------------------------------------------------------------------------
 # Installation file Variables
@@ -179,9 +179,7 @@ Function DownloadFileWithProgress {
 #==============================================================================
 # Check for installation of Git
 #==============================================================================
-Write-Output "-----------------------------------------------------------------"
-Write-Output " Checking for Git installation"
-Write-Output "-----------------------------------------------------------------"
+Write-Output " - Checking for Git installation . . ."
 If ( Test-Path $strGitDir\bin\git.exe ) {
 
     # Found Git, do nothing
@@ -191,7 +189,7 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
 
     # Git not found, install
     Write-Output " - Git Not Found"
-    Write-Output " - Downloading $strArchiveFile . . ."
+    Write-Output " - Downloading $strGit . . ."
     $file = $strGit
     $url = "$strWindowsRepo\$file"
     $file = "$strDownloadDir\$file"
@@ -223,6 +221,7 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
 #------------------------------------------------------------------------------
 Write-Output " - Cloning salt from $strSaltClone"
 Write-Output " - Target Directory: $strSaltDir"
+Write-Output ""
 Set-Location -Path "$strSaltDir"
 $p = Start-Process $strGitDir\bin\git.exe -ArgumentList "clone $strSaltClone" -Wait -NoNewWindow -PassThru
 
