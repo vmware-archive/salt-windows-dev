@@ -35,6 +35,11 @@ Write-Output ""
 #==============================================================================
 # Declare Variables
 #==============================================================================
+# Source and Version Variables
+#------------------------------------------------------------------------------
+$strSaltClone   = "https://github.com/saltstack/salt"
+$strSaltVersion = "2015.2"
+
 # Path Variables
 #------------------------------------------------------------------------------
 $strDownloadDir     = "$env:Temp\DevSalt"
@@ -102,8 +107,6 @@ If ( Test-Path -Path $strSaltDir ) {
 # Installation file Variables
 #------------------------------------------------------------------------------
 $strGit         = "Git-1.9.5-preview20141217.exe"
-$strSaltClone   = "https://github.com/saltstack/salt"
-$strSaltVersion = "2015.2"
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
