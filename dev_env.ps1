@@ -51,11 +51,12 @@ $p = New-Item $strSaltDir -ItemType Directory -Force
 #------------------------------------------------------------------------------
 # Installation file Variables
 #------------------------------------------------------------------------------
-$strPip         = "get-pip.py"
+$strCertifi     = "certifi-14.05.14.tar.gz"
+$strGnuGPG      = "python-gnupg-0.3.7.tar.gz"
 $strJinja       = "Jinja2-2.7.3-py27-none-any.whl"
+$strPip         = "get-pip.py"
 $strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
 $strWMI         = "WMI-1.4.9-py2-none-any.whl"
-$strCertifi     = "certifi-14.05.14.tar.gz"
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
@@ -308,6 +309,12 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strCertifi . . ."
 Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strCertifi"
+$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Installing $strGnuGPG . . ."
+Write-Output " ----------------------------------------------------------------"
+$file = "$strDownloadDir\$strGnuGPG"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
