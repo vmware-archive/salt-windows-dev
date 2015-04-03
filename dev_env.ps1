@@ -233,7 +233,7 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strM2Crypto . . ."
 Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strM2Crypto"
-$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList $file -Wait -NoNewWindow -PassThru
+$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # PyCrypto
@@ -242,7 +242,7 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPyCrypto . . ."
 Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPyCrypto"
-$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList $file -Wait -NoNewWindow -PassThru
+$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # PyWin32
@@ -251,7 +251,7 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strPyWin . . ."
 Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strPyWin"
-$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList $file -Wait -NoNewWindow -PassThru
+$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
 
 #==============================================================================
 # Install additional prerequisites using PIP
