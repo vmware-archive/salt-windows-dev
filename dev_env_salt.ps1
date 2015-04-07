@@ -206,7 +206,7 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
     Add-Content -path $strDownloadDir\git.inf -value "Group=Git"
     Add-Content -path $strDownloadDir\git.inf -value "NoIcons=0"
     Add-Content -path $strDownloadDir\git.inf -value "SetupType=default"
-    Add-Content -path $strDownloadDir\git.inf -value "Components=ext,ext\cheetah,assoc,assoc_sh"
+    Add-Content -path $strDownloadDir\git.inf -value "Components=ext,ext\reg,ext\reg\shellhere,assoc,assoc_sh"
     Add-Content -path $strDownloadDir\git.inf -value "Tasks="
     Add-Content -path $strDownloadDir\git.inf -value "PathOption=Cmd"
     Add-Content -path $strDownloadDir\git.inf -value "SSHOption=OpenSSH"
@@ -215,7 +215,7 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
     # Install Git
     Write-Output " - Installing $strGit . . ."
     $file = "$strDownloadDir\$strGit"
-    $p = Start-Process $file -ArgumentList '/SILENT /LOADINF="$strDownloadDir\git.inf"' -Wait -NoNewWindow -PassThru
+    $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$strDownloadDir\git.inf" -Wait -NoNewWindow -PassThru
 
 }
 
