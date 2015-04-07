@@ -20,6 +20,11 @@
 #       CREATED: 03/15/2015
 #==============================================================================
 
+# Load parameters
+param(
+    [bool]$Silent = $False
+)
+
 Clear-Host
 Write-Output "================================================================="
 Write-Output ""
@@ -333,6 +338,9 @@ Write-Output "================================================================="
 Write-Output "Salt Stack Dev Environment Script Complete"
 Write-Output "================================================================="
 Write-Output ""
-Write-Output "Press any key to continue ..."
-$p = $HOST.UI.RawUI.Flushinputbuffer()
-$p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+If ( -Not $Silent ) {
+    Write-Output "Press any key to continue ..."
+    $p = $HOST.UI.RawUI.Flushinputbuffer()
+    $p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
