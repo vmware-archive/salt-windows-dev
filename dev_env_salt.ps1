@@ -22,7 +22,8 @@
 
 # Load parameters
 param(
-    [bool]$Silent = $False
+    [bool]$Silent = $False,
+    [string]$Version = "2015.2"
 )
 
 Clear-Host
@@ -38,6 +39,9 @@ Write-Output ""
 Write-Output "            To run silently add -Silent $True"
 Write-Output "            eg: dev_env_salt.ps1 -Silent $True"
 Write-Output ""
+Write-Output "            To specify a version add -Version '2015.2'"
+Write-Output "            eg: dev_env_salt.ps1 -Version '2015.2'"
+Write-Output ""
 Write-Output "================================================================="
 Write-Output ""
 
@@ -47,7 +51,7 @@ Write-Output ""
 # Source and Version Variables
 #------------------------------------------------------------------------------
 $strSaltClone   = "https://github.com/saltstack/salt"
-$strSaltVersion = "2015.2"
+$strSaltVersion = $Version
 
 # Path Variables
 #------------------------------------------------------------------------------
