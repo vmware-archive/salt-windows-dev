@@ -107,6 +107,7 @@ If ( Test-Path -Path $strSaltDir ) {
 # Installation file Variables
 #------------------------------------------------------------------------------
 $strGit         = "Git-1.9.5-preview20141217.exe"
+$strNSIS        = "nsis-3.0b1-setup.exe"
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
@@ -115,11 +116,13 @@ If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
 
     Write-Output " - Detected 64bit Architecture..."
     $strGitDir      = "C:\Program Files (x86)\Git"
+    $strNSISDir     = "C:\Program Files (x86)\NSIS"
 
 } Else {
 
     Write-Output " - Detected 32bit Architecture..."
     $strGitDir      = "C:\Program Files\Git"
+    $strNSISDir     = "C:\Program Files\NSIS"
 
 }
 
@@ -216,6 +219,32 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
     Write-Output " - Installing $strGit . . ."
     $file = "$strDownloadDir\$strGit"
     $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$strDownloadDir\git.inf" -Wait -NoNewWindow -PassThru
+
+}
+
+#==============================================================================
+# Check for installation of NSIS
+#==============================================================================
+Write-Output " - Checking for NSIS installation . . ."
+If ( Test-Path $strNSISDir\NSIS.exe ) {
+
+    # Found NSIS, do nothing
+    Write-Output " - NSIS Found"
+
+} Else {
+
+    # NSIS not found, install
+    Write-Output " - NSIS Not Found"
+    Write-Output " - Downloading $strNSIS . . ."
+    $file = $strNSIS
+    $url = "$strWindowsRepo\$file"
+    $file = "$strDownloadDir\$file"
+    DownloadFileWithProgress $url $file
+
+    # Install NSIS
+    Write-Output " - Installing $strNSIS . . ."
+    $file = "$strDownloadDir\$strNSIS"
+    $p = Start-Process $file -ArgumentList '/S' -Wait -NoNewWindow -PassThru
 
 }
 
