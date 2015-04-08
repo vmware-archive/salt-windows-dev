@@ -20,6 +20,11 @@
 #       CREATED: 03/23/2015
 #==============================================================================
 
+# Load parameters
+param(
+    [bool]$Silent = $False
+)
+
 Clear-Host
 Write-Output "================================================================="
 Write-Output ""
@@ -28,6 +33,7 @@ Write-Output ""
 Write-Output "               - Installs Salt"
 Write-Output "               - Detects 32/64 bit Architecture"
 Write-Output "               - Detects installation of Git"
+Write-Output "               - Detects installation of Nullsoft Installer"
 Write-Output ""
 Write-Output "================================================================="
 Write-Output ""
@@ -55,6 +61,7 @@ $p = New-Item $strDownloadDir -ItemType Directory -Force
 #------------------------------------------------------------------------------
 # Check to see if the Salt Directory already exists
 # - Prompt to continue if it does
+# - Delete the directory if silent
 # - Create the directory if it doesn't
 #------------------------------------------------------------------------------
 $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes","Description."
@@ -63,38 +70,48 @@ $cancel = New-Object System.Management.Automation.Host.ChoiceDescription "&Cance
 $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no, $cancel)
 
 If ( Test-Path -Path $strSaltDir ) {
-    Write-Output ""
-    Write-Output "-------------------------------------------------------------"
-    Write-Host " Existing Dev Directory Found" -ForegroundColor Yellow
-    Write-Output "-------------------------------------------------------------"
-    Write-Output ""
-    Write-Host " The following directory exists:" -ForegroundColor Yellow
-    Write-Host " $strSaltDir" -ForegroundColor Yellow
-    Write-Output ""
-    Write-Output "-------------------------------------------------------------"
-    Write-Host " Would you like to delete the contents of this directory?" -ForegroundColor Yellow
-    Write-Output "-------------------------------------------------------------"
-    Write-Output ""
-    $result = $host.ui.PromptForChoice("", "", $options, 0)
-    Write-Output ""
-    Switch ($result) {
 
-        # Selected Yes, Remove folder contents
-        0 {
-            Write-Output " - Removing the contents of $strSaltDir"
-            Remove-Item $strSaltDir\* -force -recurse
-            Break
+    If ( $Silent ) {
+
+        # Remove the directory
+        Write-Output " - Removing the contents of $strSaltDir"
+        Remove-Item $strSaltDir\* -Force -Recurse
+
+    } Else {
+
+        # Prompt to continue
+        Write-Output ""
+        Write-Output "-------------------------------------------------------------"
+        Write-Host " Existing Dev Directory Found" -ForegroundColor Yellow
+        Write-Output "-------------------------------------------------------------"
+        Write-Output ""
+        Write-Host " The following directory exists:" -ForegroundColor Yellow
+        Write-Host " $strSaltDir" -ForegroundColor Yellow
+        Write-Output ""
+        Write-Output "-------------------------------------------------------------"
+        Write-Host " Would you like to delete the contents of this directory?" -ForegroundColor Yellow
+        Write-Output "-------------------------------------------------------------"
+        Write-Output ""
+        $result = $host.ui.PromptForChoice("", "", $options, 0)
+        Write-Output ""
+        Switch ($result) {
+
+            # Selected Yes, Remove folder contents
+            0 {
+                Write-Output " - Removing the contents of $strSaltDir"
+                Remove-Item $strSaltDir\* -Force -Recurse
+                Break
+            }
+
+            # Selected No, continue with no change
+            1 {
+                Write-Output " - Contents NOT Deleted"
+                Break
+            }
+
+            # Selected Cancel, end the script
+            2{ Exit }
         }
-
-        # Selected No, continue with no change
-        1 {
-            Write-Output " - Contents NOT Deleted"
-            Break
-        }
-
-        # Selected Cancel, end the script
-        2{ Exit }
-
     }
 
 } Else {
