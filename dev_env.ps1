@@ -65,6 +65,8 @@ $strJinja       = "Jinja2-2.7.3-py27-none-any.whl"
 $strPip         = "get-pip.py"
 $strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
 $strWMI         = "WMI-1.4.9-py2-none-any.whl"
+$strGit         = "Git-1.9.5-preview20141217.exe"
+$strNSIS        = "nsis-3.0b1-setup.exe"
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
@@ -72,6 +74,9 @@ $strWMI         = "WMI-1.4.9-py2-none-any.whl"
 If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
 
     Write-Output "Detected 64bit Architecture..."
+
+    $strGitDir      = "C:\Program Files (x86)\Git"
+    $strNSISDir     = "C:\Program Files (x86)\NSIS"
 
     $strArchiveFile = "Salt64.zip"
 
@@ -88,6 +93,9 @@ If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
  } Else {
 
     Write-Output "Detected 32bit Architecture"
+
+    $strGitDir      = "C:\Program Files\Git"
+    $strNSISDir     = "C:\Program Files\NSIS"
 
     $strArchiveFile = "Salt32.zip"
 
@@ -203,6 +211,62 @@ Expand-ZipFile $file $strDownloadDir
 # Install Dependencies
 #==============================================================================
 Write-Output "Installing Dependencies . . ."
+
+#------------------------------------------------------------------------------
+# Check for installation of Git
+#------------------------------------------------------------------------------
+Write-Output " - Checking for Git installation . . ."
+If ( Test-Path $strGitDir\bin\git.exe ) {
+
+    # Found Git, do nothing
+    Write-Output " - Git Found . . ."
+
+} Else {
+
+    # Git not found, install
+    Write-Output " - Git Not Found . . ."
+
+    # Create the inf file to be passed to the Git executable
+    Write-Host " - Creating inf . . ."
+    Set-Content -path $strDownloadDir\git.inf -value "[Setup]"
+    Add-Content -path $strDownloadDir\git.inf -value "Lang=default"
+    Add-Content -path $strDownloadDir\git.inf -value "Dir=$strGitDir"
+    Add-Content -path $strDownloadDir\git.inf -value "Group=Git"
+    Add-Content -path $strDownloadDir\git.inf -value "NoIcons=0"
+    Add-Content -path $strDownloadDir\git.inf -value "SetupType=default"
+    Add-Content -path $strDownloadDir\git.inf -value "Components=ext,ext\reg,ext\reg\shellhere,assoc,assoc_sh"
+    Add-Content -path $strDownloadDir\git.inf -value "Tasks="
+    Add-Content -path $strDownloadDir\git.inf -value "PathOption=Cmd"
+    Add-Content -path $strDownloadDir\git.inf -value "SSHOption=OpenSSH"
+    Add-Content -path $strDownloadDir\git.inf -value "CRLFOption=CRLFAlways"
+
+    # Install Git
+    Write-Output " - Installing $strGit . . ."
+    $file = "$strDownloadDir\$strGit"
+    $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$strDownloadDir\git.inf" -Wait -NoNewWindow -PassThru
+
+}
+
+#------------------------------------------------------------------------------
+# Check for installation of NSIS
+#------------------------------------------------------------------------------
+Write-Output " - Checking for NSIS installation . . ."
+If ( Test-Path $strNSISDir\NSIS.exe ) {
+
+    # Found NSIS, do nothing
+    Write-Output " - NSIS Found . . ."
+
+} Else {
+
+    # NSIS not found, install
+    Write-Output " - NSIS Not Found . . ."
+
+    # Install NSIS
+    Write-Output " - Installing $strNSIS . . ."
+    $file = "$strDownloadDir\$strNSIS"
+    $p = Start-Process $file -ArgumentList '/S' -Wait -NoNewWindow -PassThru
+
+}
 
 #------------------------------------------------------------------------------
 # Install Python
