@@ -313,6 +313,9 @@ Write-Output " - Salt Version:     $strSaltVersion"
 Write-Output " - Target Directory: $strSaltDir"
 Write-Output "================================================================="
 Write-Output ""
-Write-Output "Press any key to continue ..."
-$p = $HOST.UI.RawUI.Flushinputbuffer()
-$p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+If ( -Not $Silent ) {
+    Write-Output "Press any key to continue ..."
+    $p = $HOST.UI.RawUI.Flushinputbuffer()
+    $p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
