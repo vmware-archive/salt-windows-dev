@@ -225,6 +225,11 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
 
     # Git not found, install
     Write-Output " - Git Not Found . . ."
+    Write-Output " - Downloading $strGit . . ."
+    $file = $strGit
+    $url = "$strWindowsRepo\$file"
+    $file = "$strDownloadDir\$file"
+    DownloadFileWithProgress $url $file
 
     # Create the inf file to be passed to the Git executable
     Write-Host " - Creating inf . . ."
@@ -260,6 +265,11 @@ If ( Test-Path $strNSISDir\NSIS.exe ) {
 
     # NSIS not found, install
     Write-Output " - NSIS Not Found . . ."
+    Write-Output " - Downloading $strNSIS . . ."
+    $file = $strNSIS
+    $url = "$strWindowsRepo\$file"
+    $file = "$strDownloadDir\$file"
+    DownloadFileWithProgress $url $file
 
     # Install NSIS
     Write-Output " - Installing $strNSIS . . ."
