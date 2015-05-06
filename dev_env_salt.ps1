@@ -23,7 +23,7 @@
 # Load parameters
 param(
     [bool]$Silent = $False,
-    [string]$Version = "2015.2"
+    [string]$Version = "2015.5"
 )
 
 Clear-Host
@@ -39,8 +39,8 @@ Write-Output ""
 Write-Output "            To run silently add -Silent `$True"
 Write-Output "            eg: dev_env_salt.ps1 -Silent `$True"
 Write-Output ""
-Write-Output "            To specify a version add -Version '2015.2'"
-Write-Output "            eg: dev_env_salt.ps1 -Version '2015.2'"
+Write-Output "            To specify a version add -Version '2015.5'"
+Write-Output "            eg: dev_env_salt.ps1 -Version '2015.5'"
 Write-Output ""
 Write-Output "================================================================="
 Write-Output ""
