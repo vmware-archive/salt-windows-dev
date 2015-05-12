@@ -400,15 +400,6 @@ $file = "$strDownloadDir\$strGnuGPG"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
-# Remove the temperary download directory
-#------------------------------------------------------------------------------
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Cleaning up downloaded files"
-Write-Output " ----------------------------------------------------------------"
-Write-Output ""
-Remove-Item $strDownloadDir -Force -Recurse
-
-#------------------------------------------------------------------------------
 # Script complete
 #------------------------------------------------------------------------------
 Write-Output "================================================================="
@@ -421,3 +412,12 @@ If ( -Not $Silent ) {
     $p = $HOST.UI.RawUI.Flushinputbuffer()
     $p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
+
+#------------------------------------------------------------------------------
+# Remove the temperary download directory
+#------------------------------------------------------------------------------
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Cleaning up downloaded files"
+Write-Output " ----------------------------------------------------------------"
+Write-Output ""
+Remove-Item $strDownloadDir -Force -Recurse
