@@ -88,7 +88,7 @@ If ([System.IntPtr]::Size -ne 4) {
     $strPython      = "64\python-2.7.8.amd64.msi"
     $strPyWin       = "64\pywin32-219.win-amd64-py2.7.exe"
     $strPyYAML      = "64\PyYAML-3.11-cp27-none-win_amd64.whl"
-    $strPyZMQ       = "64\pyzmq-14.5.0-cp27-none-win_amd64.whl"
+    $strPyZMQ       = "64\pyzmq-14.6.0-cp27-none-win_amd64.whl"
 
  } Else {
 
@@ -107,7 +107,7 @@ If ([System.IntPtr]::Size -ne 4) {
     $strPython      = "32\python-2.7.8.msi"
     $strPyWin       = "32\pywin32-219.win32-py2.7.exe"
     $strPyYAML      = "32\PyYAML-3.11-cp27-none-win32.whl"
-    $strPyZMQ       = "32\pyzmq-14.5.0-cp27-none-win32.whl"
+    $strPyZMQ       = "32\pyzmq-14.6.0-cp27-none-win32.whl"
 
 }
 
