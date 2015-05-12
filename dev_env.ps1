@@ -71,7 +71,7 @@ $strNSIS        = "nsis-3.0b1-setup.exe"
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
 #------------------------------------------------------------------------------
-If (((Get-WMIObject Win32_OperatingSystem).OSArchitecture).Contains("64")) {
+If ([System.IntPtr]::Size -ne 4) {
 
     Write-Output "Detected 64bit Architecture..."
 
