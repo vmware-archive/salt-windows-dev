@@ -40,37 +40,62 @@ Write-Output "================================================================="
 Write-Output ""
 
 #==============================================================================
-# Declare Variables
+# Get the Directory of actual script
 #==============================================================================
-# Path Variables
+$path = dir "$($myInvocation.MyCommand.Definition)"
+$path = $path.DirectoryName
+
+#==============================================================================
+# Import Modules
+#==============================================================================
+Import-Module $path\Modules\download-module.psm1
+Import-Module $path\Modules\get-settings.psm1
+Import-Module $path\Modules\uac-module.psm1
+Import-Module $path\Modules\zip-module.psm1
+
+#==============================================================================
+# Check for Elevated Privileges
+#==============================================================================
+if (!(Get-IsAdministrator))
+{
+    if (Get-IsUacEnabled)
+    {
+        
+        # We are not running "as Administrator" - so relaunch as administrator
+   
+        # Create a new process object that starts PowerShell
+        $newProcess = new-object System.Diagnostics.ProcessStartInfo "PowerShell";
+   
+        # Specify the current script path and name as a parameter
+        $newProcess.Arguments = $myInvocation.MyCommand.Definition
+
+        # Specify the current working directory
+        $newProcess.WorkingDirectory = "$path"
+   
+        # Indicate that the process should be elevated
+        $newProcess.Verb = "runas";
+   
+        # Start the new process
+        [System.Diagnostics.Process]::Start($newProcess);
+   
+        # Exit from the current, unelevated, process
+        exit
+
+    } else {
+        throw "You must be administrator to run this script"
+    }
+}
+
 #------------------------------------------------------------------------------
-$strDownloadDir     = "$env:Temp\DevSalt"
-$strSaltDir         = "C:\salt"
-# Salt32.zip and Salt64.zip reside on the saltstack server (default)
-$strWindowsRepo     = "http://docs.saltstack.com/downloads/windows-deps"
-# Salt32.zip and Salt64.zip reside in the same directory as this script
-# This would be for an offline installation
-#$strWindowsRepo     = $strWindowsRepo = Convert-Path .
-$strPythonDir       = "C:\Python27"
-$strScriptsDir      = "$strPythonDir\Scripts"
+# Load Settings
+#------------------------------------------------------------------------------
+$ini = Get-Settings
 
 #------------------------------------------------------------------------------
 # Create Directories
 #------------------------------------------------------------------------------
-$p = New-Item $strDownloadDir -ItemType Directory -Force
-$p = New-Item $strSaltDir -ItemType Directory -Force
-
-#------------------------------------------------------------------------------
-# Installation file Variables
-#------------------------------------------------------------------------------
-$strCertifi     = "certifi-14.05.14.tar.gz"
-$strGnuGPG      = "python-gnupg-0.3.7.tar.gz"
-$strJinja       = "Jinja2-2.7.3-py27-none-any.whl"
-$strPip         = "get-pip.py"
-$strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
-$strWMI         = "WMI-1.4.9-py2-none-any.whl"
-$strGit         = "Git-1.9.5-preview20141217.exe"
-$strNSIS        = "nsis-3.0b1-setup.exe"
+$p = New-Item $ini['Settings']['DownloadDir'] -ItemType Directory -Force
+$p = New-Item $ini['Settings']['SaltDir'] -ItemType Directory -Force
 
 #------------------------------------------------------------------------------
 # Determine Architecture (32 or 64 bit) and assign variables
@@ -79,148 +104,25 @@ If ([System.IntPtr]::Size -ne 4) {
 
     Write-Output "Detected 64bit Architecture..."
 
-    $strGitDir      = "C:\Program Files (x86)\Git"
-    $strNSISDir     = "C:\Program Files (x86)\NSIS"
-
-    $strArchiveFile = "Salt64.zip"
-
-    $strM2Crypto    = "64\M2Crypto-0.21.1.win-amd64-py2.7.exe"
-    $strMarkupSafe  = "64\MarkupSafe-0.23-cp27-none-win_amd64.whl"
-    $strMsgPack     = "64\msgpack_python-0.4.5-cp27-none-win_amd64.whl"
-    $strPSUtil      = "64\psutil-2.2.1-cp27-none-win_amd64.whl"
-    $strPyCrypto    = "64\pycrypto-2.6.win-amd64-py2.7.exe"
-    $strPython      = "64\python-2.7.8.amd64.msi"
-    $strPyWin       = "64\pywin32-219.win-amd64-py2.7.exe"
-    $strPyYAML      = "64\PyYAML-3.11-cp27-none-win_amd64.whl"
-    $strPyZMQ       = "64\pyzmq-14.6.0-cp27-none-win_amd64.whl"
-
+    $bitPaths    = "64bitPaths"
+    $bitPrograms = "64bitPrograms"
+    $bitFolder   = "64"
+  
  } Else {
 
     Write-Output "Detected 32bit Architecture"
 
-    $strGitDir      = "C:\Program Files\Git"
-    $strNSISDir     = "C:\Program Files\NSIS"
-
-    $strArchiveFile = "Salt32.zip"
-
-    $strM2Crypto    = "32\M2Crypto-0.21.1.win32-py2.7.exe"
-    $strMarkupSafe  = "32\MarkupSafe-0.23-cp27-none-win32.whl"
-    $strMsgPack     = "32\msgpack_python-0.4.5-cp27-none-win32.whl"
-    $strPSUtil      = "32\psutil-2.2.1-cp27-none-win32.whl"
-    $strPyCrypto    = "32\pycrypto-2.6.win32-py2.7.exe"
-    $strPython      = "32\python-2.7.8.msi"
-    $strPyWin       = "32\pywin32-219.win32-py2.7.exe"
-    $strPyYAML      = "32\PyYAML-3.11-cp27-none-win32.whl"
-    $strPyZMQ       = "32\pyzmq-14.6.0-cp27-none-win32.whl"
+    $bitPaths    = "32bitPaths"
+    $bitPrograms = "32bitPrograms"
+    $bitFolder   = "32"
 
 }
-
-#==============================================================================
-# Define Functions
-#==============================================================================
-Function DownloadFileWithProgress {
-
-    # Code for this function borrowed from http://poshcode.org/2461
-    # Thanks Crazy Dave
-
-    # This function downloads the passed file and shows a progress bar
-    # It receives two parameters:
-    #    $url - the file source
-    #    $localfile - the file destination on the local machine
-
-    param(
-        [Parameter(Mandatory=$true)]
-        [String] $url,
-        [Parameter(Mandatory=$false)]
-        [String] $localFile = (Join-Path $pwd.Path $url.SubString($url.LastIndexOf('/'))) 
-    )
-
-    begin {
-        $client = New-Object System.Net.WebClient
-        $Global:downloadComplete = $false
-        $eventDataComplete = Register-ObjectEvent $client DownloadFileCompleted `
-            -SourceIdentifier WebClient.DownloadFileComplete `
-            -Action {$Global:downloadComplete = $true}
-        $eventDataProgress = Register-ObjectEvent $client DownloadProgressChanged `
-            -SourceIdentifier WebClient.DownloadProgressChanged `
-            -Action { $Global:DPCEventArgs = $EventArgs }
-    }
-    process {
-        Write-Progress -Activity 'Downloading file' -Status $url
-        $client.DownloadFileAsync($url, $localFile)
-
-        while (!($Global:downloadComplete)) {
-            $pc = $Global:DPCEventArgs.ProgressPercentage
-            if ($pc -ne $null) {
-                Write-Progress -Activity 'Downloading file' -Status $url -PercentComplete $pc
-            }
-        }
-        Write-Progress -Activity 'Downloading file' -Status $url -Complete
-    }
-
-    end {
-        Unregister-Event -SourceIdentifier WebClient.DownloadProgressChanged
-        Unregister-Event -SourceIdentifier WebClient.DownloadFileComplete
-        $client.Dispose()
-        $Global:downloadComplete = $null
-        $Global:DPCEventArgs = $null
-        Remove-Variable client
-        Remove-Variable eventDataComplete
-        Remove-Variable eventDataProgress
-        [GC]::Collect()
-    }
-}
-
-Function Expand-ZipFile($zipfile, $destination) {
-
-    # This function unzips a zip file
-    # Code obtained from:
-    # http://www.howtogeek.com/tips/how-to-extract-zip-files-using-powershell/
-
-    # Create a new directory if it doesn't exist
-    If (!(Test-Path -Path $destination)) {
-        $p = New-Item -ItemType directory -Path $destination
-    }
-
-    # Define Objects
-    $objShell = New-Object -Com Shell.Application
-
-    # Open the zip file
-    $objZip = $objShell.NameSpace($zipfile)
-
-    # Unzip each item in the zip file
-    ForEach($item in $objZip.Items()) {
-        $objShell.Namespace($destination).CopyHere($item, 0x14)
-    }
-}
-
-#==============================================================================
-# Download Dependencies File
-#==============================================================================
-Write-Output "Downloading $strArchiveFile . . ."
-$file = $strArchiveFile
-$url = "$strWindowsRepo\$file"
-$file = "$strDownloadDir\$file"
-If (!(Test-Path $file)) {
-    DownloadFileWithProgress $url $file
-}
-
-#==============================================================================
-# Unzip Dependencies File
-#==============================================================================
-Write-Output "Unzipping $strArchiveFile . . ."
-Expand-ZipFile $file $strDownloadDir
-
-#==============================================================================
-# Install Dependencies
-#==============================================================================
-Write-Output "Installing Dependencies . . ."
 
 #------------------------------------------------------------------------------
 # Check for installation of Git
 #------------------------------------------------------------------------------
 Write-Output " - Checking for Git installation . . ."
-If ( Test-Path $strGitDir\bin\git.exe ) {
+If ( Test-Path "$($ini[$bitPaths]['GitDir'])\bin\git.exe" ) {
 
     # Found Git, do nothing
     Write-Output " - Git Found . . ."
@@ -229,38 +131,37 @@ If ( Test-Path $strGitDir\bin\git.exe ) {
 
     # Git not found, install
     Write-Output " - Git Not Found . . ."
-    Write-Output " - Downloading $strGit . . ."
-    $file = $strGit
-    $url = "$strWindowsRepo\$file"
-    $file = "$strDownloadDir\$file"
+    Write-Output " - Downloading $($ini['Prerequisites']['Git']) . . ."
+    $file = "$($ini['Prerequisites']['Git'])"
+    $url  = "$($ini['Settings']['SaltRepo'])/$file"
+    $file = "$($ini['Settings']['DownloadDir'])\$file"
     DownloadFileWithProgress $url $file
 
     # Create the inf file to be passed to the Git executable
     Write-Host " - Creating inf . . ."
-    Set-Content -path $strDownloadDir\git.inf -value "[Setup]"
-    Add-Content -path $strDownloadDir\git.inf -value "Lang=default"
-    Add-Content -path $strDownloadDir\git.inf -value "Dir=$strGitDir"
-    Add-Content -path $strDownloadDir\git.inf -value "Group=Git"
-    Add-Content -path $strDownloadDir\git.inf -value "NoIcons=0"
-    Add-Content -path $strDownloadDir\git.inf -value "SetupType=default"
-    Add-Content -path $strDownloadDir\git.inf -value "Components=ext,ext\reg,ext\reg\shellhere,assoc,assoc_sh"
-    Add-Content -path $strDownloadDir\git.inf -value "Tasks="
-    Add-Content -path $strDownloadDir\git.inf -value "PathOption=Cmd"
-    Add-Content -path $strDownloadDir\git.inf -value "SSHOption=OpenSSH"
-    Add-Content -path $strDownloadDir\git.inf -value "CRLFOption=CRLFAlways"
+    Set-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "[Setup]"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Lang=default"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Dir=$($ini['64bitPaths']['GitDir'])"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Group=Git"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "NoIcons=0"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "SetupType=default"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Components=ext,ext\reg,ext\reg\shellhere,assoc,assoc_sh"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Tasks="
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "PathOption=Cmd"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "SSHOption=OpenSSH"
+    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "CRLFOption=CRLFAlways"
 
     # Install Git
-    Write-Output " - Installing $strGit . . ."
-    $file = "$strDownloadDir\$strGit"
-    $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$strDownloadDir\git.inf" -Wait -NoNewWindow -PassThru
-
+    Write-Output " - Installing $($ini['Prerequisites']['Git']) . . ."
+    $file = "$($ini['Settings']['DownloadDir'])\$($ini['Prerequisites']['Git'])"
+    $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$($ini['Settings']['DownloadDir'])\git.inf" -Wait -NoNewWindow -PassThru
 }
 
 #------------------------------------------------------------------------------
 # Check for installation of NSIS
 #------------------------------------------------------------------------------
 Write-Output " - Checking for NSIS installation . . ."
-If ( Test-Path $strNSISDir\NSIS.exe ) {
+If ( Test-Path "$($ini[$bitPaths]['NSISDir'])\NSIS.exe" ) {
 
     # Found NSIS, do nothing
     Write-Output " - NSIS Found . . ."
@@ -269,139 +170,168 @@ If ( Test-Path $strNSISDir\NSIS.exe ) {
 
     # NSIS not found, install
     Write-Output " - NSIS Not Found . . ."
-    Write-Output " - Downloading $strNSIS . . ."
-    $file = $strNSIS
-    $url = "$strWindowsRepo\$file"
-    $file = "$strDownloadDir\$file"
+    Write-Output " - Downloading $($ini['Prerequisites']['NSIS']) . . ."
+    $file = "$($ini['Prerequisites']['NSIS'])"
+    $url  = "$($ini['Settings']['SaltRepo'])/$file"
+    $file = "$($ini['Settings']['DownloadDir'])\$file"
     DownloadFileWithProgress $url $file
 
     # Install NSIS
-    Write-Output " - Installing $strNSIS . . ."
-    $file = "$strDownloadDir\$strNSIS"
-    $p = Start-Process $file -ArgumentList '/S' -Wait -NoNewWindow -PassThru
+    Write-Output " - Installing $($ini['Prerequisites']['NSIS']) . . ."
+    $file = "$($ini['Settings']['DownloadDir'])\$($ini['Prerequisites']['NSIS'])"
+    $p    = Start-Process $file -ArgumentList '/S' -Wait -NoNewWindow -PassThru
 
 }
 
 #------------------------------------------------------------------------------
 # Install Python
 #------------------------------------------------------------------------------
-Write-Output " - Installing $strPython . . ."
-$file = "$strDownloadDir\$strPython"
-$p = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,PrependPath TARGETDIR=$strPythonDir" -Wait -NoNewWindow -PassThru
+Write-Output " - Downloading $($ini[$bitPrograms]['Python']) . . ."
+$file = "$($ini[$bitPrograms]['Python'])"
+$url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
+$file = "$($ini['Settings']['DownloadDir'])\$file"
+DownloadFileWithProgress $url $file
+    
+Write-Output " - Installing $($ini[$bitPrograms]['Python']) . . ."
+$file = "$($ini['Settings']['DownloadDir'])\$($ini[$bitPrograms]['Python'])"
+$p    = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,PrependPath TARGETDIR=$($ini['Settings']['PythonDir'])" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # Update Environment Variables
 #------------------------------------------------------------------------------
 Write-Output " - Updating Environment Variables . . ."
-$Path=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-If (!($Path.ToLower().Contains("$strPythonDir\Scripts".ToLower()))) {
-    $newPath="$strPythonDir\Scripts;$Path"
+$Path = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
+If (!($Path.ToLower().Contains("$($ini['Settings']['ScriptsDir'])".ToLower()))) {
+    $newPath  = "$($ini['Settings']['ScriptsDir']);$Path"
     Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
+    $env:Path = $newPath
 }
 
 #------------------------------------------------------------------------------
 # pip (easy_install included in pip install file)
 #------------------------------------------------------------------------------
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strPip . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strPip"
-$p = Start-Process "$strPythonDir\python" -ArgumentList "$file --no-index --find-links=$strDownloadDir" -Wait -NoNewWindow -PassThru
+Write-Output " - Downloading $($ini['CommonPrograms']['Pip']) . . ."
+$file = "$($ini['CommonPrograms']['Pip'])"
+$url  = "$($ini['Settings']['SaltRepo'])/$file"
+$file = "$($ini['Settings']['DownloadDir'])\$file"
+DownloadFileWithProgress $url $file
 
-#==============================================================================
-# Install Executables using Easy_Install
-#==============================================================================
+Write-Output " - Downloading $($ini['CommonPrograms']['Pip-Wheel']) . . ."
+$file = "$($ini['CommonPrograms']['Pip-Wheel'])"
+$url  = "$($ini['Settings']['SaltRepo'])/$file"
+$file = "$($ini['Settings']['DownloadDir'])\$file"
+DownloadFileWithProgress $url $file
 
-#------------------------------------------------------------------------------
-# M2Crypto
-#------------------------------------------------------------------------------
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strM2Crypto . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strM2Crypto"
-$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
+Write-Output " - Downloading $($ini['CommonPrograms']['SetupTools']) . . ."
+$file = "$($ini['CommonPrograms']['SetupTools'])"
+$url  = "$($ini['Settings']['SaltRepo'])/$file"
+$file = "$($ini['Settings']['DownloadDir'])\$file"
+DownloadFileWithProgress $url $file
 
-#------------------------------------------------------------------------------
-# PyCrypto
-#------------------------------------------------------------------------------
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strPyCrypto . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strPyCrypto"
-$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
+Write-Output " - Downloading $($ini['CommonPrograms']['Wheel']) . . ."
+$file = "$($ini['CommonPrograms']['Wheel'])"
+$url  = "$($ini['Settings']['SaltRepo'])/$file"
+$file = "$($ini['Settings']['DownloadDir'])\$file"
+DownloadFileWithProgress $url $file
 
-#------------------------------------------------------------------------------
-# PyWin32
-#------------------------------------------------------------------------------
+# Use Python to install Pip
 Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strPyWin . . ."
+Write-Output " - Installing $($ini['CommonPrograms']['Pip']) . . ."
 Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strPyWin"
-$p = Start-Process "$strScriptsDir\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
+Write-Output "$($ini['Settings']['PythonDir'])\python $file --no-index --find-links=$($ini['Settings']['DownloadDir'])"
+$file = "$($ini['Settings']['DownloadDir'])\$($ini['CommonPrograms']['Pip'])"
+$p = Start-Process "$($ini['Settings']['PythonDir'])\python" -ArgumentList "$file --no-index --find-links=$($ini['Settings']['DownloadDir'])" -Wait -NoNewWindow -PassThru
 
 #==============================================================================
 # Install additional prerequisites using PIP
 #==============================================================================
+# Download first
+#------------------------------------------------------------------------------
+$arrInstalled = "Pip", "Pip-Wheel", "SetupTools", "Wheel", "Python"
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Downloading . . ."
+Write-Output " ----------------------------------------------------------------"
+ForEach( $key in $ini['CommonPrograms'].Keys ) {
+    
+    If ( $arrInstalled -notcontains $key ) {
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strMarkupSafe . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strMarkupSafe"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+        Write-Output "   - $key . . ."
+        $file = "$($ini['CommonPrograms'][$key])"
+        $url  = "$($ini['Settings']['SaltRepo'])/$file"
+        $file = "$($ini['Settings']['DownloadDir'])\$file"
+        DownloadFileWithProgress $url $file
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strJinja . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strJinja"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+    }
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strMsgPack . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strMsgPack"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+}
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strPSUtil . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strPSUtil"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+ForEach( $key in $ini[$bitPrograms].Keys ) {
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strPyYAML . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strPyYAML"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+    If ( $arrInstalled -notcontains $key ) {
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strPyZMQ . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strPyZMQ"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+        Write-Output "   - $key . . ."
+        $file = "$($ini[$bitPrograms][$key])"
+        $url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
+        $file = "$($ini['Settings']['DownloadDir'])\$file"
+        DownloadFileWithProgress $url $file
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strWMI . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strWMI"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+    }
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strRequests . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strRequests"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+}
 
+#------------------------------------------------------------------------------
+# Install
+#------------------------------------------------------------------------------
 Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strCertifi . . ."
+Write-Output " - Installing . . ."
 Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strCertifi"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
 
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $strGnuGPG . . ."
-Write-Output " ----------------------------------------------------------------"
-$file = "$strDownloadDir\$strGnuGPG"
-$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+ForEach( $key in $ini['CommonPrograms'].Keys ) {
+
+    If ( $arrInstalled -notcontains $key ) {
+
+        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+        Write-Output "   - $key . . ."
+        
+        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+        $file = "$($ini['Settings']['DownloadDir'])\$($ini['CommonPrograms'][$key])"
+        $file = dir "$($file)"
+        If ( $file.Extension -eq ".exe" ) {
+
+            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
+
+        } else {
+
+            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
+
+        }
+
+    }
+
+}
+
+ForEach( $key in $ini[$bitPrograms].Keys ) {
+
+    If ( $arrInstalled -notcontains $key ) {
+
+        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+        Write-Output "   - $key . . ."
+        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+        $file = "$($ini['Settings']['DownloadDir'])\$($ini[$bitPrograms][$key])"
+        $file = dir "$($file)"
+        If ( $file.Extension -eq ".exe" ) {
+
+            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
+
+        } else {
+    
+            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
+        
+        }
+    
+    }
+
+}
 
 #------------------------------------------------------------------------------
 # Script complete
@@ -424,4 +354,4 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Cleaning up downloaded files"
 Write-Output " ----------------------------------------------------------------"
 Write-Output ""
-Remove-Item $strDownloadDir -Force -Recurse
+Remove-Item $($ini['Settings']['DownloadDir']) -Force -Recurse
