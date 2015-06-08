@@ -45,7 +45,7 @@ If you need to have spaces in the build name wrap them in quotes. eg:
 ```
 BuildSalt.bat "My Test Build"
 ```
-This file does the following:
+This script does the following:
 - Removes ```buildenv\bin``` if it exists
 - Copies the contents of ```C:\Python27``` to ```buildenv\bin```
 - Edits the pip and easy_install binaries to be portable
@@ -53,5 +53,5 @@ This file does the following:
 - Removes unused modules and documentation (doc, share, tcl, lib-tk, test, etc...)
 - Runs ```makensis``` to build the installer
 
-The installer is named something like "Salt-Minion-<passed version>-Setup.exe" and is placed in the ```installer``` directory. This is what you will use to install your build of Salt.
+The installer is named something like ```Salt-Minion-<passed version>-Setup.exe``` and is placed in the ```installer``` directory. This is what you will use to install your build of Salt.
 
