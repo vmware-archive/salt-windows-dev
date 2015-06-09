@@ -24,6 +24,8 @@ After running this script, pull the branch of salt you want to work on from gith
 ```
 pip install -e .
 ```
+You'll also need to copy the windows specific configuration files to ```c:\salt```. These files can be found in your cloned salt repo in ```salt\pkg\windows\buildenv```. Copy the contents of this directory to ```c:\salt```.
+
 This will allow you to work off your source code. To start a salt-minion in debug, just type salt-minion -l debug. When you edit your code, just restart your minion to test.
 
 ## Build a Windows Installer for Salt
