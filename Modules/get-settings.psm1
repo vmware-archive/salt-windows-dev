@@ -45,10 +45,11 @@ Function Get-Settings {
 
         # CPU Architecture Independent Software
         $CommonPrograms = @{
+            "Backports"  = "backports.ssl_match_hostname-3.4.0.2.tar.gz"
             "Certifi"    = "certifi-2015.04.28-py2.py3-none-any.whl"
+            "Futures"    = "futures-3.0.3.tar.gz"
             "GnuGPG"     = "python-gnupg-0.3.7.tar.gz"
             "Jinja"      = "Jinja2-2.7.3-py27-none-any.whl"
-            "Libsodium"  = "libsodium-13.dll"
             "MarkupSafe" = "MarkupSafe-0.23.tar.gz"
             "MsgPack"    = "msgpack-python-0.4.6.tar.gz"
             "Pip"        = "get-pip-7.0.3.py"
@@ -56,6 +57,7 @@ Function Get-Settings {
             "PyYAML"     = "PyYAML-3.11.tar.gz"
             "Requests"   = "requests-2.5.3-py2.py3-none-any.whl"
             "SetupTools" = "setuptools-17.0-py2.py3-none-any.whl"
+            "Tornado"    = "tornado-4.2.tar.gz"
             "Wheel"      = "wheel-0.24.0-py2.py3-none-any.whl"
             "WMI"        = "WMI-1.4.9-py2-none-any.whl"
         }
@@ -85,6 +87,7 @@ Function Get-Settings {
         $CommonDLLs = @{
             "libsodium" = "libsodium-13.dll"
         }
+        $ini.Add("CommonDLLs", $CommonDLLs)
 
         # DLL's for 64 bit Windows
         $64bitDLLs = @{
@@ -92,6 +95,7 @@ Function Get-Settings {
             "SSLeay"     = "ssleay32.dll"
             "OpenSSLLic" = "OpenSSL_License.txt"
         }
+        $ini.Add("64bitDLLs", $64bitDLLs)
 
         # DLL's for 32 bit Windows
         $32bitDLLs = @{
@@ -99,6 +103,7 @@ Function Get-Settings {
             "SSLeay"     = "ssleay32.dll"
             "OpenSSLLic" = "OpenSSL_License.txt"
         }
+        $ini.Add("32bitDLLs", $32bitDLLs)
 
         Write-Verbose "$($MyInvocation.MyCommand.Name):: Finished Loading Settings"
         Return $ini

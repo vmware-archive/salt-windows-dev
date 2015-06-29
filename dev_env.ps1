@@ -56,16 +56,12 @@ Import-Module $path\Modules\zip-module.psm1
 #==============================================================================
 # Check for Elevated Privileges
 #==============================================================================
-if (!(Get-IsAdministrator))
-{
-    if (Get-IsUacEnabled)
-    {
-        
+If (!(Get-IsAdministrator)) {
+    If (Get-IsUacEnabled) {
         # We are not running "as Administrator" - so relaunch as administrator
-   
         # Create a new process object that starts PowerShell
         $newProcess = new-object System.Diagnostics.ProcessStartInfo "PowerShell";
-   
+           
         # Specify the current script path and name as a parameter
         $newProcess.Arguments = $myInvocation.MyCommand.Definition
 
@@ -79,10 +75,10 @@ if (!(Get-IsAdministrator))
         [System.Diagnostics.Process]::Start($newProcess);
    
         # Exit from the current, unelevated, process
-        exit
+        Exit
 
-    } else {
-        throw "You must be administrator to run this script"
+    } Else {
+        Throw "You must be administrator to run this script"
     }
 }
 
@@ -104,7 +100,7 @@ If ([System.IntPtr]::Size -ne 4) {
 
     Write-Output "Detected 64bit Architecture..."
 
-    $bitDLLs     = "64bitDLLS"
+    $bitDLLs     = "64bitDLLs"
     $bitPaths    = "64bitPaths"
     $bitPrograms = "64bitPrograms"
     $bitFolder   = "64"
@@ -254,31 +250,23 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Downloading . . ."
 Write-Output " ----------------------------------------------------------------"
 ForEach($key in $ini['CommonPrograms'].Keys) {
-    
     If ($arrInstalled -notcontains $key) {
-
         Write-Output "   - $key . . ."
         $file = "$($ini['CommonPrograms'][$key])"
         $url  = "$($ini['Settings']['SaltRepo'])/$file"
         $file = "$($ini['Settings']['DownloadDir'])\$file"
         DownloadFileWithProgress $url $file
-
     }
-
 }
 
 ForEach($key in $ini[$bitPrograms].Keys) {
-
     If ($arrInstalled -notcontains $key) {
-
         Write-Output "   - $key . . ."
         $file = "$($ini[$bitPrograms][$key])"
         $url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
         $file = "$($ini['Settings']['DownloadDir'])\$file"
         DownloadFileWithProgress $url $file
-
     }
-
 }
 
 #------------------------------------------------------------------------------
@@ -295,52 +283,40 @@ ForEach($key in $ini['CommonPrograms'].Keys) {
 
         Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
         Write-Output "   - $key . . ."
-        
         Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
         $file = "$($ini['Settings']['DownloadDir'])\$($ini['CommonPrograms'][$key])"
         $file = dir "$($file)"
         If ( $file.Extension -eq ".exe" ) {
-
             $p = Start-Process "$($ini['Settings']['ScriptsDir'])\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
-
         } else {
-
             $p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
-
         }
-
     }
-
 }
 
 # Architecture Specific Programs
 ForEach($key in $ini[$bitPrograms].Keys) {
-
     If ($arrInstalled -notcontains $key) {
-
         Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
         Write-Output "   - $key . . ."
         Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
         $file = "$($ini['Settings']['DownloadDir'])\$($ini[$bitPrograms][$key])"
         $file = dir "$($file)"
-        If ( $file.Extension -eq ".exe" ) {
-
+        If ($file.Extension -eq ".exe") {
             $p = Start-Process "$($ini['Settings']['ScriptsDir'])\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
-
-        } else {
-    
+        } Else {
             $p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
-        
         }
-    
     }
-
 }
 
 # Copy DLLs to Python Directory
 # Common DLL's
-ForEach( $key in $ini['CommonDLLs'].Keys ) {
-    If ( $arrInstalled -notcontains $key ) {
+Write-Output " ----------------------------------------------------------------"
+Write-Output "   - Copying DLLs . . ."
+Write-Output " ----------------------------------------------------------------"
+ForEach ($key in $ini['CommonDLLs'].Keys) {
+    If ($arrInstalled -notcontains $key) {
         Write-Output "   - $key . . ."
         $file = "$($ini['CommonDLLs'][$key])"
         $url  = "$($ini['Settings']['SaltRepo'])/$file"
@@ -350,10 +326,10 @@ ForEach( $key in $ini['CommonDLLs'].Keys ) {
 }
 
 # Architecture Specific DLL's
-ForEach( $key in $ini['bitDLLs'].Keys ) {
-    If ( $arrInstalled -notcontains $key ) {
+ForEach($key in $ini[$bitDLLs].Keys) {
+    If ($arrInstalled -notcontains $key) {
         Write-Output "   - $key . . ."
-        $file = "$($ini['bitDLLs'][$key])"
+        $file = "$($ini[$bitDLLs][$key])"
         $url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
         $file = "$($ini['Settings']['PythonDir'])\$file"
         DownloadFileWithProgress $url $file
