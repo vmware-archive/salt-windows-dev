@@ -48,6 +48,7 @@ Function Get-Settings {
             "Certifi"    = "certifi-2015.04.28-py2.py3-none-any.whl"
             "GnuGPG"     = "python-gnupg-0.3.7.tar.gz"
             "Jinja"      = "Jinja2-2.7.3-py27-none-any.whl"
+            "Libsodium"  = "libsodium-13.dll"
             "MarkupSafe" = "MarkupSafe-0.23.tar.gz"
             "MsgPack"    = "msgpack-python-0.4.6.tar.gz"
             "Pip"        = "get-pip-7.0.3.py"
@@ -62,25 +63,42 @@ Function Get-Settings {
 
         # Filenames for 64 bit Windows
         $64bitPrograms = @{
-            "M2Crypto"   = "M2Crypto-0.21.1.win-amd64-py2.7.exe"
             "PSUtil"     = "psutil-2.2.1-cp27-none-win_amd64.whl"
             "PyCrypto"   = "pycrypto-2.6.1-cp27-none-win_amd64.whl"
-            "PyZMQ"      = "pyzmq-14.6.0-cp27-none-win_amd64.whl"
             "Python"     = "python-2.7.8.amd64.msi"
             "PyWin"      = "pypiwin32-219-cp27-none-win_amd64.whl"
+            "PyZMQ"      = "pyzmq-14.6.0-cp27-none-win_amd64.whl"
         }
         $ini.Add("64bitPrograms", $64bitPrograms)
 
         # Filenames for 32 bit Windows
         $32bitPrograms = @{
-            "M2Crypto"   = "M2Crypto-0.21.1.win32-py2.7.exe"
-            "Python"     = "python-2.7.8.msi"
             "PSUtil"     = "psutil-2.2.1-cp27-none-win32.whl"
             "PyCrypto"   = "pycrypto-2.6.1-cp27-none-win32.whl"
-            "PyZMQ"      = "pyzmq-14.6.0-cp27-none-win32.whl"
+            "Python"     = "python-2.7.8.msi"
             "PyWin"      = "pypiwin32-219-cp27-none-win32.whl"
+            "PyZMQ"      = "pyzmq-14.6.0-cp27-none-win32.whl"
         }
         $ini.Add("32bitPrograms", $32bitPrograms)
+
+        # CPU Architecture Independent DLL's
+        $CommonDLLs = @{
+            "libsodium" = "libsodium-13.dll"
+        }
+
+        # DLL's for 64 bit Windows
+        $64bitDLLs = @{
+            "Libeay"     = "libeay32.dll"
+            "SSLeay"     = "ssleay32.dll"
+            "OpenSSLLic" = "OpenSSL_License.txt"
+        }
+
+        # DLL's for 32 bit Windows
+        $32bitDLLs = @{
+            "Libeay"     = "libeay32.dll"
+            "SSLeay"     = "ssleay32.dll"
+            "OpenSSLLic" = "OpenSSL_License.txt"
+        }
 
         Write-Verbose "$($MyInvocation.MyCommand.Name):: Finished Loading Settings"
         Return $ini

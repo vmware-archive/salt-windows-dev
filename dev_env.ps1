@@ -104,6 +104,7 @@ If ([System.IntPtr]::Size -ne 4) {
 
     Write-Output "Detected 64bit Architecture..."
 
+    $bitDLLs     = "64bitDLLS"
     $bitPaths    = "64bitPaths"
     $bitPrograms = "64bitPrograms"
     $bitFolder   = "64"
@@ -112,6 +113,7 @@ If ([System.IntPtr]::Size -ne 4) {
 
     Write-Output "Detected 32bit Architecture"
 
+    $bitDLLs     = "32bitDLLs"
     $bitPaths    = "32bitPaths"
     $bitPrograms = "32bitPrograms"
     $bitFolder   = "32"
@@ -122,7 +124,7 @@ If ([System.IntPtr]::Size -ne 4) {
 # Check for installation of Git
 #------------------------------------------------------------------------------
 Write-Output " - Checking for Git installation . . ."
-If ( Test-Path "$($ini[$bitPaths]['GitDir'])\bin\git.exe" ) {
+If (Test-Path "$($ini[$bitPaths]['GitDir'])\bin\git.exe") {
 
     # Found Git, do nothing
     Write-Output " - Git Found . . ."
@@ -161,7 +163,7 @@ If ( Test-Path "$($ini[$bitPaths]['GitDir'])\bin\git.exe" ) {
 # Check for installation of NSIS
 #------------------------------------------------------------------------------
 Write-Output " - Checking for NSIS installation . . ."
-If ( Test-Path "$($ini[$bitPaths]['NSISDir'])\NSIS.exe" ) {
+If (Test-Path "$($ini[$bitPaths]['NSISDir'])\NSIS.exe") {
 
     # Found NSIS, do nothing
     Write-Output " - NSIS Found . . ."
@@ -251,9 +253,9 @@ $arrInstalled = "Pip", "Pip-Wheel", "SetupTools", "Wheel", "Python"
 Write-Output " ----------------------------------------------------------------"
 Write-Output " - Downloading . . ."
 Write-Output " ----------------------------------------------------------------"
-ForEach( $key in $ini['CommonPrograms'].Keys ) {
+ForEach($key in $ini['CommonPrograms'].Keys) {
     
-    If ( $arrInstalled -notcontains $key ) {
+    If ($arrInstalled -notcontains $key) {
 
         Write-Output "   - $key . . ."
         $file = "$($ini['CommonPrograms'][$key])"
@@ -265,9 +267,9 @@ ForEach( $key in $ini['CommonPrograms'].Keys ) {
 
 }
 
-ForEach( $key in $ini[$bitPrograms].Keys ) {
+ForEach($key in $ini[$bitPrograms].Keys) {
 
-    If ( $arrInstalled -notcontains $key ) {
+    If ($arrInstalled -notcontains $key) {
 
         Write-Output "   - $key . . ."
         $file = "$($ini[$bitPrograms][$key])"
@@ -286,9 +288,10 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing . . ."
 Write-Output " ----------------------------------------------------------------"
 
-ForEach( $key in $ini['CommonPrograms'].Keys ) {
+# Common Programs
+ForEach($key in $ini['CommonPrograms'].Keys) {
 
-    If ( $arrInstalled -notcontains $key ) {
+    If ($arrInstalled -notcontains $key) {
 
         Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
         Write-Output "   - $key . . ."
@@ -310,9 +313,10 @@ ForEach( $key in $ini['CommonPrograms'].Keys ) {
 
 }
 
-ForEach( $key in $ini[$bitPrograms].Keys ) {
+# Architecture Specific Programs
+ForEach($key in $ini[$bitPrograms].Keys) {
 
-    If ( $arrInstalled -notcontains $key ) {
+    If ($arrInstalled -notcontains $key) {
 
         Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
         Write-Output "   - $key . . ."
@@ -333,6 +337,29 @@ ForEach( $key in $ini[$bitPrograms].Keys ) {
 
 }
 
+# Copy DLLs to Python Directory
+# Common DLL's
+ForEach( $key in $ini['CommonDLLs'].Keys ) {
+    If ( $arrInstalled -notcontains $key ) {
+        Write-Output "   - $key . . ."
+        $file = "$($ini['CommonDLLs'][$key])"
+        $url  = "$($ini['Settings']['SaltRepo'])/$file"
+        $file = "$($ini['Settings']['PythonDir'])\$file"
+        DownloadFileWithProgress $url $file
+    }
+}
+
+# Architecture Specific DLL's
+ForEach( $key in $ini['bitDLLs'].Keys ) {
+    If ( $arrInstalled -notcontains $key ) {
+        Write-Output "   - $key . . ."
+        $file = "$($ini['bitDLLs'][$key])"
+        $url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
+        $file = "$($ini['Settings']['PythonDir'])\$file"
+        DownloadFileWithProgress $url $file
+    }
+}
+
 #------------------------------------------------------------------------------
 # Script complete
 #------------------------------------------------------------------------------
@@ -341,7 +368,7 @@ Write-Output "Salt Stack Dev Environment Script Complete"
 Write-Output "================================================================="
 Write-Output ""
 
-If ( -Not $Silent ) {
+If (-Not $Silent) {
     Write-Output "Press any key to continue ..."
     $p = $HOST.UI.RawUI.Flushinputbuffer()
     $p = $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
