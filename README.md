@@ -12,7 +12,7 @@ $Settings = @{
     ...
 }
 ```
-If you put this script in the same directory with your dependencies folder (C:\Some\Path\Depenencies) this value can be "Convert-Path .\Dependencies", without the quotes. eg:
+If you put this script in the same directory with your dependencies folder (C:\Some\Path\Dependencies) this value can be "Convert-Path .\Dependencies", without the quotes. eg:
 ```
 $Settings = @{
     "SaltRepo"    = Convert-Path .\Dependencies
