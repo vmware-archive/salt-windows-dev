@@ -14,7 +14,7 @@ Function Get-Settings {
 
         # Location where the files are kept
         $Settings = @{
-            "SaltRepo"    = "http://docs.saltstack.com/downloads/windows-deps"
+            "SaltRepo"    = "https://repo.saltstack.com/windows/dependencies"
             "SaltDir"     = "C:\salt"
             "PythonDir"   = "C:\Python27"
             "ScriptsDir"  = "C:\Python27\Scripts"
