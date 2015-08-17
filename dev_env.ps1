@@ -47,7 +47,7 @@ Write-Output ""
 $strDownloadDir     = "$env:Temp\DevSalt"
 $strSaltDir         = "C:\salt"
 # Salt32.zip and Salt64.zip reside on the saltstack server (default)
-$strWindowsRepo     = "http://docs.saltstack.com/downloads/windows-deps"
+$strWindowsRepo     = "https://repo.saltstack.com/windows/dependencies"
 # Salt32.zip and Salt64.zip reside in the same directory as this script
 # This would be for an offline installation
 #$strWindowsRepo     = $strWindowsRepo = Convert-Path .
