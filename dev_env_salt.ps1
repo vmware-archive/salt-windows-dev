@@ -57,7 +57,7 @@ $strSaltVersion = $Version
 #------------------------------------------------------------------------------
 $strDownloadDir     = "$env:Temp\DevSalt"
 $strSaltDir         = "C:\Salt-Dev"
-$strWindowsRepo     = "http://docs.saltstack.com/downloads/windows-deps"
+$strWindowsRepo     = "http://repo.saltstack.com/windows/dependencies/"
 $strPythonDir       = "C:\Python27"
 
 #------------------------------------------------------------------------------
