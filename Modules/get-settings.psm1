@@ -47,6 +47,7 @@ Function Get-Settings {
         $CommonPrograms = @{
             "Backports"  = "backports.ssl_match_hostname-3.4.0.2.tar.gz"
             "Certifi"    = "certifi-2015.04.28-py2.py3-none-any.whl"
+            "DateUtil"   = "python_dateutil-2.4.2-py2.py3-none-any.whl"
             "Futures"    = "futures-3.0.3.tar.gz"
             "GnuGPG"     = "python-gnupg-0.3.7.tar.gz"
             "ioloop"     = "ioloop-0.1a.tar.gz"
@@ -55,6 +56,7 @@ Function Get-Settings {
             "MsgPack"    = "msgpack-python-0.4.6.tar.gz"
             "Pip"        = "get-pip-7.1.0.py"
             "Pip-Wheel"  = "pip-7.1.0-py2.py3-none-any.whl"
+            "PyMySQL"    = "PyMySQL-0.6.6-py2.py3-none-any.whl"
             "PyYAML"     = "PyYAML-3.11.tar.gz"
             "Requests"   = "requests-2.5.3-py2.py3-none-any.whl"
             "SetupTools" = "setuptools-17.0-py2.py3-none-any.whl"
