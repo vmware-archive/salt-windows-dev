@@ -18,6 +18,14 @@
 #       LICENSE: Apache 2.0
 #  ORGANIZATION: SaltStack (saltstack.org)
 #       CREATED: 03/15/2015
+#
+#==============================================================================
+#
+#    CHANGE LOG:
+#                20150831:
+#                - Added wheel files for PyMySQL and Python-DateUtils to Zips
+#                - Added str Variables for PyMySQL and Python-DateUtils
+#
 #==============================================================================
 
 # Load parameters
@@ -64,9 +72,11 @@ $p = New-Item $strSaltDir -ItemType Directory -Force
 # Installation file Variables
 #------------------------------------------------------------------------------
 $strCertifi     = "certifi-14.05.14.tar.gz"
+$strDateUtils   = "python_dateutil-2.4.2-py2.py3-none-any.whl"
 $strGnuGPG      = "python-gnupg-0.3.7.tar.gz"
 $strJinja       = "Jinja2-2.7.3-py27-none-any.whl"
 $strPip         = "get-pip.py"
+$strPyMySQL     = "PyMySQL-0.6.6-py2.py3-none-any.whl"
 $strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
 $strWMI         = "WMI-1.4.9-py2-none-any.whl"
 $strGit         = "Git-1.9.5-preview20141217.exe"
@@ -401,6 +411,18 @@ Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing $strGnuGPG . . ."
 Write-Output " ----------------------------------------------------------------"
 $file = "$strDownloadDir\$strGnuGPG"
+$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Installing $strDateUtils . . ."
+Write-Output " ----------------------------------------------------------------"
+$file = "$strDownloadDir\$strDateUtils"
+$p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
+
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Installing $strPyMySQL . . ."
+Write-Output " ----------------------------------------------------------------"
+$file = "$strDownloadDir\$strPyMySQL"
 $p = Start-Process "$strScriptsDir\pip" -ArgumentList "install $file" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
