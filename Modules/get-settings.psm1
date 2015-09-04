@@ -60,6 +60,7 @@ Function Get-Settings {
             "PyYAML"     = "PyYAML-3.11.tar.gz"
             "Requests"   = "requests-2.5.3-py2.py3-none-any.whl"
             "SetupTools" = "setuptools-17.0-py2.py3-none-any.whl"
+            "Six"        = "six-1.9.0-py2.py3-none-any.whl"
             "Tornado"    = "tornado-4.2.1.tar.gz"
             "Wheel"      = "wheel-0.24.0-py2.py3-none-any.whl"
             "WMI"        = "WMI-1.4.9-py2-none-any.whl"
