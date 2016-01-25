@@ -71,7 +71,7 @@ Function Get-Settings {
         $64bitPrograms = @{
             "PSUtil"     = "psutil-3.1.1-cp27-none-win_amd64.whl"
             "PyCrypto"   = "pycrypto-2.6.1-cp27-none-win_amd64.whl"
-            "Python"     = "python-2.7.10.amd64.msi"
+            "Python"     = "python-2.7.11.amd64.msi"
             "PyWin"      = "pypiwin32-219-cp27-none-win_amd64.whl"
             "PyZMQ"      = "pyzmq-14.7.0-cp27-none-win_amd64.whl"
         }
@@ -81,7 +81,7 @@ Function Get-Settings {
         $32bitPrograms = @{
             "PSUtil"     = "psutil-3.1.1-cp27-none-win32.whl"
             "PyCrypto"   = "pycrypto-2.6.1-cp27-none-win32.whl"
-            "Python"     = "python-2.7.10.msi"
+            "Python"     = "python-2.7.11.msi"
             "PyWin"      = "pypiwin32-219-cp27-none-win32.whl"
             "PyZMQ"      = "pyzmq-14.7.0-cp27-none-win32.whl"
         }
