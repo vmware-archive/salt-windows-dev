@@ -42,16 +42,16 @@ Write-Output ""
 #==============================================================================
 # Get the Directory of actual script
 #==============================================================================
-$path = dir "$($myInvocation.MyCommand.Definition)"
-$path = $path.DirectoryName
+$script_path = dir "$($myInvocation.MyCommand.Definition)"
+$script_path = $script_path.DirectoryName
 
 #==============================================================================
 # Import Modules
 #==============================================================================
-Import-Module $path\Modules\download-module.psm1
-Import-Module $path\Modules\get-settings.psm1
-Import-Module $path\Modules\uac-module.psm1
-Import-Module $path\Modules\zip-module.psm1
+Import-Module $script_path\Modules\download-module.psm1
+Import-Module $script_path\Modules\get-settings.psm1
+Import-Module $script_path\Modules\uac-module.psm1
+Import-Module $script_path\Modules\zip-module.psm1
 
 #==============================================================================
 # Check for Elevated Privileges
@@ -66,7 +66,7 @@ If (!(Get-IsAdministrator)) {
         $newProcess.Arguments = $myInvocation.MyCommand.Definition
 
         # Specify the current working directory
-        $newProcess.WorkingDirectory = "$path"
+        $newProcess.WorkingDirectory = "$script_path"
    
         # Indicate that the process should be elevated
         $newProcess.Verb = "runas";
@@ -192,7 +192,7 @@ DownloadFileWithProgress $url $file
     
 Write-Output " - Installing $($ini[$bitPrograms]['Python']) . . ."
 $file = "$($ini['Settings']['DownloadDir'])\$($ini[$bitPrograms]['Python'])"
-$p    = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,PrependPath TARGETDIR=$($ini['Settings']['PythonDir'])" -Wait -NoNewWindow -PassThru
+$p    = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,pip_feature,PrependPath TARGETDIR=$($ini['Settings']['PythonDir'])" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # Update Environment Variables
@@ -205,113 +205,42 @@ If (!($Path.ToLower().Contains("$($ini['Settings']['ScriptsDir'])".ToLower()))) 
     $env:Path = $newPath
 }
 
-#------------------------------------------------------------------------------
-# pip (easy_install included in pip install file)
-#------------------------------------------------------------------------------
-Write-Output " - Downloading $($ini['CommonPrograms']['Pip']) . . ."
-$file = "$($ini['CommonPrograms']['Pip'])"
-$url  = "$($ini['Settings']['SaltRepo'])/$file"
-$file = "$($ini['Settings']['DownloadDir'])\$file"
-DownloadFileWithProgress $url $file
-
-Write-Output " - Downloading $($ini['CommonPrograms']['Pip-Wheel']) . . ."
-$file = "$($ini['CommonPrograms']['Pip-Wheel'])"
-$url  = "$($ini['Settings']['SaltRepo'])/$file"
-$file = "$($ini['Settings']['DownloadDir'])\$file"
-DownloadFileWithProgress $url $file
-
-Write-Output " - Downloading $($ini['CommonPrograms']['SetupTools']) . . ."
-$file = "$($ini['CommonPrograms']['SetupTools'])"
-$url  = "$($ini['Settings']['SaltRepo'])/$file"
-$file = "$($ini['Settings']['DownloadDir'])\$file"
-DownloadFileWithProgress $url $file
-
-Write-Output " - Downloading $($ini['CommonPrograms']['Wheel']) . . ."
-$file = "$($ini['CommonPrograms']['Wheel'])"
-$url  = "$($ini['Settings']['SaltRepo'])/$file"
-$file = "$($ini['Settings']['DownloadDir'])\$file"
-DownloadFileWithProgress $url $file
-
-# Use Python to install Pip
+#==============================================================================
+# update pip and easy_install
+#==============================================================================
 Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing $($ini['CommonPrograms']['Pip']) . . ."
+Write-Output " - Updating pip and easy_install . . ."
 Write-Output " ----------------------------------------------------------------"
-Write-Output "$($ini['Settings']['PythonDir'])\python $file --no-index --find-links=$($ini['Settings']['DownloadDir'])"
-$file = "$($ini['Settings']['DownloadDir'])\$($ini['CommonPrograms']['Pip'])"
-$p = Start-Process "$($ini['Settings']['PythonDir'])\python" -ArgumentList "$file --no-index --find-links=$($ini['Settings']['DownloadDir'])" -Wait -NoNewWindow -PassThru
+$p = Start-Process "$($ini['Settings']['PythonDir'])\python.exe" -ArgumentList "-m pip install -r $($script_path)\req_pip.txt" -Wait -NoNewWindow -PassThru
 
 #==============================================================================
-# Install additional prerequisites using PIP
+# Install pypi resources using pip
 #==============================================================================
-# Download first
-#------------------------------------------------------------------------------
-$arrInstalled = "Pip", "Pip-Wheel", "SetupTools", "Wheel", "Python"
 Write-Output " ----------------------------------------------------------------"
-Write-Output " - Downloading . . ."
+Write-Output " - Installing additional prereqs . . ."
 Write-Output " ----------------------------------------------------------------"
-ForEach($key in $ini['CommonPrograms'].Keys) {
-    If ($arrInstalled -notcontains $key) {
-        Write-Output "   - $key . . ."
-        $file = "$($ini['CommonPrograms'][$key])"
-        $url  = "$($ini['Settings']['SaltRepo'])/$file"
-        $file = "$($ini['Settings']['DownloadDir'])\$file"
-        DownloadFileWithProgress $url $file
-    }
-}
+$p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install -r $($script_path)\req.txt" -Wait -NoNewWindow -PassThru
 
-ForEach($key in $ini[$bitPrograms].Keys) {
-    If ($arrInstalled -notcontains $key) {
-        Write-Output "   - $key . . ."
-        $file = "$($ini[$bitPrograms][$key])"
-        $url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
-        $file = "$($ini['Settings']['DownloadDir'])\$file"
-        DownloadFileWithProgress $url $file
-    }
-}
+#==============================================================================
+# Install PyCrypto from wheel file
+#==============================================================================
+Write-Output " ----------------------------------------------------------------"
+Write-Output " - Installing PyCrypto . . ."
+Write-Output " ----------------------------------------------------------------"
+# Download
+$file = "$($ini[$bitPrograms]['PyCrypto'])"
+$url  = "$($ini['Settings']['SaltRepo'])/$bitFolder/$file"
+$file = "$($ini['Settings']['DownloadDir'])\$file"
+DownloadFileWithProgress $url $file
 
-#------------------------------------------------------------------------------
 # Install
-#------------------------------------------------------------------------------
-Write-Output " ----------------------------------------------------------------"
-Write-Output " - Installing . . ."
-Write-Output " ----------------------------------------------------------------"
+$file = "$($ini['Settings']['DownloadDir'])\$($ini[$bitPrograms]['PyCrypto'])"
+$file = dir "$($file)"
+$p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip.exe" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
 
-# Common Programs
-ForEach($key in $ini['CommonPrograms'].Keys) {
-
-    If ($arrInstalled -notcontains $key) {
-
-        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
-        Write-Output "   - $key . . ."
-        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
-        $file = "$($ini['Settings']['DownloadDir'])\$($ini['CommonPrograms'][$key])"
-        $file = dir "$($file)"
-        If ( $file.Extension -eq ".exe" ) {
-            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
-        } else {
-            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
-        }
-    }
-}
-
-# Architecture Specific Programs
-ForEach($key in $ini[$bitPrograms].Keys) {
-    If ($arrInstalled -notcontains $key) {
-        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
-        Write-Output "   - $key . . ."
-        Write-Output " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
-        $file = "$($ini['Settings']['DownloadDir'])\$($ini[$bitPrograms][$key])"
-        $file = dir "$($file)"
-        If ($file.Extension -eq ".exe") {
-            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\easy_install" -ArgumentList "-Z $file" -Wait -NoNewWindow -PassThru
-        } Else {
-            $p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install --no-index --find-links=$($ini['Settings']['DownloadDir']) $file " -Wait -NoNewWindow -PassThru
-        }
-    }
-}
-
+#==============================================================================
 # Copy DLLs to Python Directory
-# Common DLL's
+#==============================================================================
 Write-Output " ----------------------------------------------------------------"
 Write-Output "   - Copying DLLs . . ."
 Write-Output " ----------------------------------------------------------------"
