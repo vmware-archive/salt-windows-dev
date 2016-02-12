@@ -61,19 +61,19 @@ If (!(Get-IsAdministrator)) {
         # We are not running "as Administrator" - so relaunch as administrator
         # Create a new process object that starts PowerShell
         $newProcess = new-object System.Diagnostics.ProcessStartInfo "PowerShell";
-           
+
         # Specify the current script path and name as a parameter
         $newProcess.Arguments = $myInvocation.MyCommand.Definition
 
         # Specify the current working directory
         $newProcess.WorkingDirectory = "$script_path"
-   
+
         # Indicate that the process should be elevated
         $newProcess.Verb = "runas";
-   
+
         # Start the new process
         [System.Diagnostics.Process]::Start($newProcess);
-   
+
         # Exit from the current, unelevated, process
         Exit
 
@@ -211,7 +211,7 @@ If (!($Path.ToLower().Contains("$($ini['Settings']['ScriptsDir'])".ToLower()))) 
 Write-Output " ----------------------------------------------------------------"
 Write-Output " - Updating pip and easy_install . . ."
 Write-Output " ----------------------------------------------------------------"
-$p = Start-Process "$($ini['Settings']['PythonDir'])\python.exe" -ArgumentList "-m pip install -r $($script_path)\req_pip.txt" -Wait -NoNewWindow -PassThru
+$p = Start-Process "$($ini['Settings']['PythonDir'])\python.exe" -ArgumentList "-m pip --no-cache-dir install -r $($script_path)\req_pip.txt" -Wait -NoNewWindow -PassThru
 
 #==============================================================================
 # Install pypi resources using pip
@@ -219,7 +219,7 @@ $p = Start-Process "$($ini['Settings']['PythonDir'])\python.exe" -ArgumentList "
 Write-Output " ----------------------------------------------------------------"
 Write-Output " - Installing additional prereqs . . ."
 Write-Output " ----------------------------------------------------------------"
-$p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip" -ArgumentList "install -r $($script_path)\req.txt" -Wait -NoNewWindow -PassThru
+$p = Start-Process "$($ini['Settings']['ScriptsDir'])\pip.exe" -ArgumentList "--no-cache-dir install -r $($script_path)\req.txt" -Wait -NoNewWindow -PassThru
 
 #==============================================================================
 # Install PyCrypto from wheel file
