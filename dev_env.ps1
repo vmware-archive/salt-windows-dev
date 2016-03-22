@@ -79,7 +79,6 @@ $strPip         = "get-pip.py"
 $strPyMySQL     = "PyMySQL-0.6.6-py2.py3-none-any.whl"
 $strRequests    = "requests-2.5.3-py2.py3-none-any.whl"
 $strWMI         = "WMI-1.4.9-py2-none-any.whl"
-$strGit         = "Git-1.9.5-preview20141217.exe"
 $strNSIS        = "nsis-3.0b1-setup.exe"
 
 #------------------------------------------------------------------------------
@@ -225,46 +224,6 @@ Expand-ZipFile $file $strDownloadDir
 # Install Dependencies
 #==============================================================================
 Write-Output "Installing Dependencies . . ."
-
-#------------------------------------------------------------------------------
-# Check for installation of Git
-#------------------------------------------------------------------------------
-Write-Output " - Checking for Git installation . . ."
-If ( Test-Path $strGitDir\bin\git.exe ) {
-
-    # Found Git, do nothing
-    Write-Output " - Git Found . . ."
-
-} Else {
-
-    # Git not found, install
-    Write-Output " - Git Not Found . . ."
-    Write-Output " - Downloading $strGit . . ."
-    $file = $strGit
-    $url = "$strWindowsRepo\$file"
-    $file = "$strDownloadDir\$file"
-    DownloadFileWithProgress $url $file
-
-    # Create the inf file to be passed to the Git executable
-    Write-Host " - Creating inf . . ."
-    Set-Content -path $strDownloadDir\git.inf -value "[Setup]"
-    Add-Content -path $strDownloadDir\git.inf -value "Lang=default"
-    Add-Content -path $strDownloadDir\git.inf -value "Dir=$strGitDir"
-    Add-Content -path $strDownloadDir\git.inf -value "Group=Git"
-    Add-Content -path $strDownloadDir\git.inf -value "NoIcons=0"
-    Add-Content -path $strDownloadDir\git.inf -value "SetupType=default"
-    Add-Content -path $strDownloadDir\git.inf -value "Components=ext,ext\reg,ext\reg\shellhere,assoc,assoc_sh"
-    Add-Content -path $strDownloadDir\git.inf -value "Tasks="
-    Add-Content -path $strDownloadDir\git.inf -value "PathOption=Cmd"
-    Add-Content -path $strDownloadDir\git.inf -value "SSHOption=OpenSSH"
-    Add-Content -path $strDownloadDir\git.inf -value "CRLFOption=CRLFAlways"
-
-    # Install Git
-    Write-Output " - Installing $strGit . . ."
-    $file = "$strDownloadDir\$strGit"
-    $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$strDownloadDir\git.inf" -Wait -NoNewWindow -PassThru
-
-}
 
 #------------------------------------------------------------------------------
 # Check for installation of NSIS
