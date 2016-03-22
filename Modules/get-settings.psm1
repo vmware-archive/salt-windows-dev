@@ -24,21 +24,18 @@ Function Get-Settings {
 
         # Prerequisite software
         $Prerequisites = @{
-            "Git"  = "Git-1.9.5-preview20141217.exe"
             "NSIS" = "nsis-3.0b1-setup.exe"
         }
         $ini.Add("Prerequisites", $Prerequisites)
 
         # Location of programs on 64 bit Windows
         $64bitPaths = @{
-            "GitDir"  = "C:\Program Files (x86)\Git"
             "NSISDir" = "C:\Program Files (x86)\NSIS"
         }
         $ini.Add("64bitPaths", $64bitPaths)
 
         # Location of programs on 32 bit Windows
         $32bitPaths = @{
-            "GitDir"  = "C:\Program Files\Git"
             "NSISDir" = "C:\Program Files\NSIS"
         }
         $ini.Add("32bitPaths", $32bitPaths)
