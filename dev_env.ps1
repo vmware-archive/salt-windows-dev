@@ -61,19 +61,19 @@ If (!(Get-IsAdministrator)) {
         # We are not running "as Administrator" - so relaunch as administrator
         # Create a new process object that starts PowerShell
         $newProcess = new-object System.Diagnostics.ProcessStartInfo "PowerShell";
-           
+
         # Specify the current script path and name as a parameter
         $newProcess.Arguments = $myInvocation.MyCommand.Definition
 
         # Specify the current working directory
         $newProcess.WorkingDirectory = "$path"
-   
+
         # Indicate that the process should be elevated
         $newProcess.Verb = "runas";
-   
+
         # Start the new process
         [System.Diagnostics.Process]::Start($newProcess);
-   
+
         # Exit from the current, unelevated, process
         Exit
 
@@ -104,7 +104,7 @@ If ([System.IntPtr]::Size -ne 4) {
     $bitPaths    = "64bitPaths"
     $bitPrograms = "64bitPrograms"
     $bitFolder   = "64"
-  
+
  } Else {
 
     Write-Output "Detected 32bit Architecture"
@@ -114,45 +114,6 @@ If ([System.IntPtr]::Size -ne 4) {
     $bitPrograms = "32bitPrograms"
     $bitFolder   = "32"
 
-}
-
-#------------------------------------------------------------------------------
-# Check for installation of Git
-#------------------------------------------------------------------------------
-Write-Output " - Checking for Git installation . . ."
-If (Test-Path "$($ini[$bitPaths]['GitDir'])\bin\git.exe") {
-
-    # Found Git, do nothing
-    Write-Output " - Git Found . . ."
-
-} Else {
-
-    # Git not found, install
-    Write-Output " - Git Not Found . . ."
-    Write-Output " - Downloading $($ini['Prerequisites']['Git']) . . ."
-    $file = "$($ini['Prerequisites']['Git'])"
-    $url  = "$($ini['Settings']['SaltRepo'])/$file"
-    $file = "$($ini['Settings']['DownloadDir'])\$file"
-    DownloadFileWithProgress $url $file
-
-    # Create the inf file to be passed to the Git executable
-    Write-Host " - Creating inf . . ."
-    Set-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "[Setup]"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Lang=default"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Dir=$($ini['64bitPaths']['GitDir'])"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Group=Git"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "NoIcons=0"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "SetupType=default"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Components=ext,ext\reg,ext\reg\shellhere,assoc,assoc_sh"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "Tasks="
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "PathOption=Cmd"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "SSHOption=OpenSSH"
-    Add-Content -path "$($ini['Settings']['DownloadDir'])\git.inf" -value "CRLFOption=CRLFAlways"
-
-    # Install Git
-    Write-Output " - Installing $($ini['Prerequisites']['Git']) . . ."
-    $file = "$($ini['Settings']['DownloadDir'])\$($ini['Prerequisites']['Git'])"
-    $p = Start-Process $file -ArgumentList "/SILENT /LOADINF=$($ini['Settings']['DownloadDir'])\git.inf" -Wait -NoNewWindow -PassThru
 }
 
 #------------------------------------------------------------------------------
