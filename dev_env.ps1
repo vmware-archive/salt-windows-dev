@@ -22,9 +22,11 @@
 #==============================================================================
 #
 #    CHANGE LOG:
-#                20150831:
-#                - Added wheel files for PyMySQL and Python-DateUtils to Zips
-#                - Added str Variables for PyMySQL and Python-DateUtils
+#               20160803:
+#               - Update to Python 2.7.12
+#               20150831:
+#               - Added wheel files for PyMySQL and Python-DateUtils to Zips
+#               - Added str Variables for PyMySQL and Python-DateUtils
 #
 #==============================================================================
 
@@ -98,7 +100,7 @@ If ([System.IntPtr]::Size -ne 4) {
     $strMsgPack     = "64\msgpack_python-0.4.5-cp27-none-win_amd64.whl"
     $strPSUtil      = "64\psutil-2.2.1-cp27-none-win_amd64.whl"
     $strPyCrypto    = "64\pycrypto-2.6.win-amd64-py2.7.exe"
-    $strPython      = "64\python-2.7.8.amd64.msi"
+    $strPython      = "64\python-2.7.12.amd64.msi"
     $strPyWin       = "64\pywin32-219.win-amd64-py2.7.exe"
     $strPyYAML      = "64\PyYAML-3.11-cp27-none-win_amd64.whl"
     $strPyZMQ       = "64\pyzmq-14.6.0-cp27-none-win_amd64.whl"
@@ -117,7 +119,7 @@ If ([System.IntPtr]::Size -ne 4) {
     $strMsgPack     = "32\msgpack_python-0.4.5-cp27-none-win32.whl"
     $strPSUtil      = "32\psutil-2.2.1-cp27-none-win32.whl"
     $strPyCrypto    = "32\pycrypto-2.6.win32-py2.7.exe"
-    $strPython      = "32\python-2.7.8.msi"
+    $strPython      = "32\python-2.7.12.msi"
     $strPyWin       = "32\pywin32-219.win32-py2.7.exe"
     $strPyYAML      = "32\PyYAML-3.11-cp27-none-win32.whl"
     $strPyZMQ       = "32\pyzmq-14.6.0-cp27-none-win32.whl"
@@ -254,9 +256,13 @@ If ( Test-Path $strNSISDir\NSIS.exe ) {
 #------------------------------------------------------------------------------
 # Install Python
 #------------------------------------------------------------------------------
-Write-Output " - Installing $strPython . . ."
+Write-Output " - Downloading $strPython . . ."
+$url = "$strWindowsRepo/$strPython"
 $file = "$strDownloadDir\$strPython"
-$p = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,PrependPath TARGETDIR=$strPythonDir" -Wait -NoNewWindow -PassThru
+DownloadFileWithProgress $url $file
+
+Write-Output " - Installing $strPython . . ."
+$p = Start-Process msiexec -ArgumentList "/i $file /qb ADDLOCAL=DefaultFeature,Extensions,pip_feature,PrependPath TARGETDIR=$strPythonDir" -Wait -NoNewWindow -PassThru
 
 #------------------------------------------------------------------------------
 # Update Environment Variables
