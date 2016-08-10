@@ -276,16 +276,6 @@ ForEach($key in $ini[$bitPrograms].Keys) {
 Write-Output " ----------------------------------------------------------------"
 Write-Output "   - Copying DLLs . . ."
 Write-Output " ----------------------------------------------------------------"
-ForEach ($key in $ini['CommonDLLs'].Keys) {
-    If ($arrInstalled -notcontains $key) {
-        Write-Output "   - $key . . ."
-        $file = "$($ini['CommonDLLs'][$key])"
-        $url  = "$($ini['Settings']['SaltRepo'])/$file"
-        $file = "$($ini['Settings']['PythonDir'])\$file"
-        DownloadFileWithProgress $url $file
-    }
-}
-
 # Architecture Specific DLL's
 ForEach($key in $ini[$bitDLLs].Keys) {
     If ($arrInstalled -notcontains $key) {
