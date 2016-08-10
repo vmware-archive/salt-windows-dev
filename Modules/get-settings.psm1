@@ -84,17 +84,16 @@ Function Get-Settings {
         }
         $ini.Add("32bitPrograms", $32bitPrograms)
 
-        # CPU Architecture Independent DLL's
-        $CommonDLLs = @{
-            "libsodium" = "libsodium-13.dll"
-        }
-        $ini.Add("CommonDLLs", $CommonDLLs)
-
         # DLL's for 64 bit Windows
         $64bitDLLs = @{
             "Libeay"     = "libeay32.dll"
             "SSLeay"     = "ssleay32.dll"
             "OpenSSLLic" = "OpenSSL_License.txt"
+            "libsodium"  = "libsodium-13.dll"
+            "concrt"     = "concrt140.dll"
+            "msvcp"      = "msvcp140.dll"
+            "vccorlib"   = "vccorlib140.dll"
+            "vcruntime"  = "vcruntime140.dll"
         }
         $ini.Add("64bitDLLs", $64bitDLLs)
 
@@ -103,6 +102,11 @@ Function Get-Settings {
             "Libeay"     = "libeay32.dll"
             "SSLeay"     = "ssleay32.dll"
             "OpenSSLLic" = "OpenSSL_License.txt"
+            "libsodium"  = "libsodium-13.dll"
+            "concrt"     = "concrt140.dll"
+            "msvcp"      = "msvcp140.dll"
+            "vccorlib"   = "vccorlib140.dll"
+            "vcruntime"  = "vcruntime140.dll"
         }
         $ini.Add("32bitDLLs", $32bitDLLs)
 
