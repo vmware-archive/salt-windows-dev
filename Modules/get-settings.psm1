@@ -24,21 +24,18 @@ Function Get-Settings {
 
         # Prerequisite software
         $Prerequisites = @{
-            "Git"  = "Git-1.9.5-preview20141217.exe"
             "NSIS" = "nsis-3.0b1-setup.exe"
         }
         $ini.Add("Prerequisites", $Prerequisites)
 
         # Location of programs on 64 bit Windows
         $64bitPaths = @{
-            "GitDir"  = "C:\Program Files (x86)\Git"
             "NSISDir" = "C:\Program Files (x86)\NSIS"
         }
         $ini.Add("64bitPaths", $64bitPaths)
 
         # Location of programs on 32 bit Windows
         $32bitPaths = @{
-            "GitDir"  = "C:\Program Files\Git"
             "NSISDir" = "C:\Program Files\NSIS"
         }
         $ini.Add("32bitPaths", $32bitPaths)
@@ -46,28 +43,31 @@ Function Get-Settings {
         # Filenames for 64 bit Windows
         $64bitPrograms = @{
             "PyCrypto"   = "pycrypto-2.6.1-cp27-none-win_amd64.whl"
-            "Python"     = "python-2.7.11.amd64.msi"
+            "Python"     = "python-2.7.12.amd64.msi"
+            "PyWin"      = "pypiwin32-219-cp27-none-win_amd64.whl"
+            "PyZMQ"      = "pyzmq-14.7.0-cp27-none-win_amd64.whl"
         }
         $ini.Add("64bitPrograms", $64bitPrograms)
 
         # Filenames for 32 bit Windows
         $32bitPrograms = @{
             "PyCrypto"   = "pycrypto-2.6.1-cp27-none-win32.whl"
-            "Python"     = "python-2.7.11.msi"
+            "Python"     = "python-2.7.12.msi"
+            "PyWin"      = "pypiwin32-219-cp27-none-win32.whl"
+            "PyZMQ"      = "pyzmq-14.7.0-cp27-none-win32.whl"
         }
         $ini.Add("32bitPrograms", $32bitPrograms)
-
-        # CPU Architecture Independent DLL's
-        $CommonDLLs = @{
-            "libsodium" = "libsodium-13.dll"
-        }
-        $ini.Add("CommonDLLs", $CommonDLLs)
 
         # DLL's for 64 bit Windows
         $64bitDLLs = @{
             "Libeay"     = "libeay32.dll"
             "SSLeay"     = "ssleay32.dll"
             "OpenSSLLic" = "OpenSSL_License.txt"
+            "libsodium"  = "libsodium-13.dll"
+            "concrt"     = "concrt140.dll"
+            "msvcp"      = "msvcp140.dll"
+            "vccorlib"   = "vccorlib140.dll"
+            "vcruntime"  = "vcruntime140.dll"
         }
         $ini.Add("64bitDLLs", $64bitDLLs)
 
@@ -76,6 +76,11 @@ Function Get-Settings {
             "Libeay"     = "libeay32.dll"
             "SSLeay"     = "ssleay32.dll"
             "OpenSSLLic" = "OpenSSL_License.txt"
+            "libsodium"  = "libsodium-13.dll"
+            "concrt"     = "concrt140.dll"
+            "msvcp"      = "msvcp140.dll"
+            "vccorlib"   = "vccorlib140.dll"
+            "vcruntime"  = "vcruntime140.dll"
         }
         $ini.Add("32bitDLLs", $32bitDLLs)
 
